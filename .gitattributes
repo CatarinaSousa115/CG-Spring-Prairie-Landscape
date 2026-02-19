@@ -1,0 +1,4 @@
+screenshots/project-t04g03.mp4 filter=lfs diff=lfs merge=lfs -text
+screenshots/final/project-t04g03-4.gif filter=lfs diff=lfs merge=lfs -text
+*.gif filter=lfs diff=lfs merge=lfs -text
+*.mp4 filter=lfs diff=lfs merge=lfs -text
