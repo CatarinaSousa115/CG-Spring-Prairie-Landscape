@@ -1,4 +1,4 @@
-import { CGFobject } from '../../lib/CGF.js';
+import { CGFobject } from "../../lib/CGF.js";
 
 export class SemiSphere extends CGFobject {
     constructor(scene, slices, stacks) {
@@ -26,10 +26,7 @@ export class SemiSphere extends CGFobject {
                 const y = r * Math.sin(phi);
 
                 this.vertices.push(x, y, z);
-
-                // normais pra dentro
                 this.normals.push(-x, -y, -z);
-
                 this.texCoords.push(j / this.slices, i / this.stacks);
             }
         }
@@ -41,7 +38,6 @@ export class SemiSphere extends CGFobject {
                 const c = a + 1;
                 const d = b + 1;
 
-                // triângulos virados pra dentro
                 this.indices.push(a, b, c);
                 this.indices.push(c, b, d);
             }

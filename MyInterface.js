@@ -13,39 +13,47 @@ export class MyInterface extends CGFinterface {
         super.init(application);
 
         this.gui = new dat.GUI();
+        this.gui.width = 320;
 
-        this.gui.add(this.scene, 'displayAxis').name("Display axis");
-        this.gui.add(this.scene, 'displayNormals').name("Display normals");
-        this.gui.add(this.scene, 'scaleFactor', 0.1, 10.0).name('Scale');
-        this.gui.add(this.scene, 'selectedMaterial', this.scene.materialIDs).name('Selected Material');
-
-        var f0 = this.gui.addFolder('Light 0');
-        f0.add(this.scene.lights[0], 'enabled').name("Enabled");
-
-        var sf0 = f0.addFolder('Light 0 Position');
-        sf0.add(this.scene.lights[0].position, '0', -5.0, 5.0).name("X Position");
-        sf0.add(this.scene.lights[0].position, '1', -5.0, 5.0).name("Y Position");
-        sf0.add(this.scene.lights[0].position, '2', -5.0, 5.0).name("Z Position");
-
-        var f1 = this.gui.addFolder('Light 1');
-        f1.add(this.scene.lights[1], 'enabled').name("Enabled");
-
-        var sf1 = f1.addFolder('Light 1 Position');
-        sf1.add(this.scene.lights[1].position, '0', -5.0, 5.0).name("X Position");
-        sf1.add(this.scene.lights[1].position, '1', -5.0, 5.0).name("Y Position");
-        sf1.add(this.scene.lights[1].position, '2', -5.0, 5.0).name("Z Position");
-
-        var sf2 = f1.addFolder('Light 1 Attenuation');
-        sf2.add(this.scene.lights[1], 'constant_attenuation', 0.00, 1.00).name("Const. Atten.");
-        sf2.add(this.scene.lights[1], 'linear_attenuation', 0.0, 1.0).name("Linear Atten.");
-        sf2.add(this.scene.lights[1], 'quadratic_attenuation', 0.0, 1.0).name("Quad. Atten.");
-
-        var f2 = this.gui.addFolder('Custom Material');
-        f2.addColor(this.scene.customMaterialValues, 'Ambient').onChange(this.scene.updateCustomMaterial.bind(this.scene));
-        f2.addColor(this.scene.customMaterialValues, 'Diffuse').onChange(this.scene.updateCustomMaterial.bind(this.scene));
-        f2.addColor(this.scene.customMaterialValues, 'Specular').onChange(this.scene.updateCustomMaterial.bind(this.scene));
-        f2.add(this.scene.customMaterialValues, 'Shininess', 0, 100).onChange(this.scene.updateCustomMaterial.bind(this.scene));
+        this.createSceneFolder();
+        this.createSkyFolder();
+        this.createWorldFolder();
+        this.createGameplayFolder();
 
         return true;
+    }
+
+    createSceneFolder() {
+        const sceneFolder = this.gui.addFolder('Scene');
+        sceneFolder.add(this.scene, 'displayAxis').name('Show axis');
+        sceneFolder.add(this.scene, 'displayNormals').name('Show normals');
+        sceneFolder.add(this.scene, 'scaleFactor', 0.1, 10.0).name('Scene scale');
+        sceneFolder.open();
+    }
+
+    createSkyFolder() {
+        const skyFolder = this.gui.addFolder('Sky');
+        skyFolder.add(this.scene, 'displaySky').name('Show sky');
+        skyFolder.add(this.scene.skyDome, 'followCamera').name('Follow camera');
+        skyFolder.add(this.scene.skyDome, 'radius', 20, 300, 1).name('Radius');
+        skyFolder.open();
+    }
+
+    createWorldFolder() {
+        const worldFolder = this.gui.addFolder('World');
+        worldFolder.add(this.scene, 'displayTerrain').name('Show terrain');
+        worldFolder.add(this.scene.terrain, 'followCamera').name('Terrain follows sky');
+        worldFolder.add(this.scene.terrain, 'radius', 10, 300, 1).name('Terrain radius');
+        worldFolder.add(this.scene.terrain, 'height', -10, 10, 0.1).name('Terrain height');
+        worldFolder
+            .add(this.scene.terrain, 'subdivisions', 1, 100, 1)
+            .name('Terrain detail')
+            .onChange((value) => this.scene.terrain.setSubdivisions(value));
+        worldFolder.close();
+    }
+
+    createGameplayFolder() {
+        const gameplayFolder = this.gui.addFolder('Gameplay');
+        gameplayFolder.close();
     }
 }
