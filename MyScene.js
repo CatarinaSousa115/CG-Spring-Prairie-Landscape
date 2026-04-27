@@ -39,7 +39,7 @@ export class MyScene extends CGFscene {
         });
 
         this.sun = new Sun(this,{
-            radius: 300
+            radius: 80
         })
 
         this.displayAxis = true;

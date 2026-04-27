@@ -7,11 +7,12 @@ export class Sun {
 
     this.sectors = options.slices ?? 32;
     this.stacks = options.stacks ?? 16;
-    this.radius = options.radius ?? 100;
+    this.orbitRadius = options.radius ?? 80;
+    this.sunSize = options.sunSize ?? 1;
     this.followCamera = options.followCamera ?? false;
 
-    this.geometry = new Sphere(scene, this.sectors, this.stacks, this.radius);
-
+    this.geometry = new Sphere(scene, this.sectors, this.stacks, 1);
+    
     this.appearance = new CGFappearance(scene);
     this.appearance.setAmbient(1.0, 0.8, 0.0, 1.0);
     this.appearance.setDiffuse(1.0, 0.8, 0.0, 1.0);
@@ -22,20 +23,23 @@ export class Sun {
   }
 
   display() {
-
     this.appearance.apply();
     this.scene.pushMatrix();
 
-    if (this.followCamera) {
-      const cameraPosition = this.scene.camera.position;
-      this.scene.translate(
-        cameraPosition[0],
-        cameraPosition[1],
-        cameraPosition[2],
-      );
-    }
+    const angle = this.scene.sunAngle ?? 0;
+
+    const R = this.orbitRadius;
+
+    const x = R * Math.cos(angle);
+    const z = R * Math.sin(angle);
+    const y = 50 + Math.sin(angle) * 10;
+
+    this.scene.translate(x, y, z);
+
+    this.scene.scale(this.sunSize, this.sunSize, this.sunSize);
 
     this.geometry.display();
+
     this.scene.popMatrix();
   }
 

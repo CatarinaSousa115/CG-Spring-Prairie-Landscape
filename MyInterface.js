@@ -44,9 +44,10 @@ export class MyInterface extends CGFinterface {
         const sunFolder = this.gui.addFolder('Sun');
         sunFolder.add(this.scene,'displaySun').name('Show sun');
         sunFolder.add(this.scene.sun,'followCamera').name('Follow Camera');
-        sunFolder.add(this.scene.sun, 'radius',20,300,1).name('Radius');
-        sunFolder.open();
-    }
+		sunFolder.add(this.scene.sun, 'orbitRadius', 20, 300, 1).name('Orbit Radius');
+		sunFolder.add(this.scene.sun, 'sunSize', 1, 50, 1).name('Sun Size');
+		sunFolder.open();
+	}
 
     createWorldFolder() {
         const worldFolder = this.gui.addFolder('World');
