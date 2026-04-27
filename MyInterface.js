@@ -19,7 +19,7 @@ export class MyInterface extends CGFinterface {
         this.createSkyFolder();
         this.createWorldFolder();
         this.createGameplayFolder();
-
+        this.createSunFolder();
         return true;
     }
 
@@ -37,6 +37,15 @@ export class MyInterface extends CGFinterface {
         skyFolder.add(this.scene.skyDome, 'followCamera').name('Follow camera');
         skyFolder.add(this.scene.skyDome, 'radius', 20, 300, 1).name('Radius');
         skyFolder.open();
+    }
+
+    createSunFolder()
+    {
+        const sunFolder = this.gui.addFolder('Sun');
+        sunFolder.add(this.scene,'displaySun').name('Show sun');
+        sunFolder.add(this.scene.sun,'followCamera').name('Follow Camera');
+        sunFolder.add(this.scene.sun, 'radius',20,300,1).name('Radius');
+        sunFolder.open();
     }
 
     createWorldFolder() {

@@ -1,7 +1,7 @@
 import { CGFscene, CGFcamera, CGFaxis } from "../lib/CGF.js";
 import { SkyDome } from "./world/SkyDome.js";
 import { PrairieTerrain } from "./world/PrairieTerrain.js";
-
+import {Sun} from "./world/Sun.js"
 /**
  * MyScene
  * @constructor
@@ -38,11 +38,17 @@ export class MyScene extends CGFscene {
             followCamera: false
         });
 
+        this.sun = new Sun(this,{
+            radius: 300
+        })
+
         this.displayAxis = true;
         this.displaySky = true;
         this.displayTerrain = true;
         this.displayNormals = false;
+        this.displaySun = true;
         this.scaleFactor = 2.0;
+        this.sunAngle = 0;
     }
 
     initLights() {
@@ -101,7 +107,20 @@ export class MyScene extends CGFscene {
         if (this.displayTerrain) {
             this.terrain.display();
         }
+        if (this.displaySun) {
+            if (this.displayNormals) 
+            {
+                this.sun.enableNormalViz();
+            }
+            else 
+            {
+                this.sun.disableNormalViz();
+            }
 
+            this.sun.display();
+
+        }    
         this.popMatrix();
-    }
+}
+
 }
