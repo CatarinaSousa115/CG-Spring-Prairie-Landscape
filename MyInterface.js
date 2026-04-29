@@ -19,6 +19,7 @@ export class MyInterface extends CGFinterface {
         this.createSkyFolder();
         this.createCloudFolder();
         this.createWorldFolder();
+        this.createScatterFolder();
         this.createGameplayFolder();
         this.createSunFolder();
         return true;
@@ -103,5 +104,14 @@ export class MyInterface extends CGFinterface {
     createGameplayFolder() {
         const gameplayFolder = this.gui.addFolder('Gameplay');
         gameplayFolder.close();
+    }
+
+    createScatterFolder() {
+        const scatterFolder = this.gui.addFolder('Scatter');
+        scatterFolder.add(this.scene, 'displayRocks').name('Show rocks');
+        scatterFolder
+            .add(this.scene.rockField, 'rockScale', 0.4, 2.5, 0.05)
+            .name('Rock scale');
+        scatterFolder.close();
     }
 }

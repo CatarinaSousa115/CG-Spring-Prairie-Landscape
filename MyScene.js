@@ -5,6 +5,7 @@ import { Sun } from "./world/Sun.js";
 import { CloudLayer } from "./world/CloudLayer.js";
 import { DirtPatchLayer } from "./world/DirtPatchLayer.js";
 import { WagonPath } from "./world/WagonPath.js";
+import { RockField } from "./world/RockField.js";
 /**
  * MyScene
  * @constructor
@@ -54,6 +55,7 @@ export class MyScene extends CGFscene {
         });
         this.dirtPatchLayer = new DirtPatchLayer(this, this.terrain);
         this.wagonPath = new WagonPath(this, this.terrain);
+        this.rockField = new RockField(this, this.terrain);
         this.initLights();
         this.setUpdatePeriod(50);
 
@@ -65,6 +67,7 @@ export class MyScene extends CGFscene {
         this.displayClouds = true;
         this.displayDirtPatches = true;
         this.displayWagonPath = true;
+        this.displayRocks = true;
         this.sunLightEnabled = true;
         this.scaleFactor = 2.0;
         this.sunAngle = 0;
@@ -163,6 +166,13 @@ export class MyScene extends CGFscene {
             else this.wagonPath.disableNormalViz();
 
             this.wagonPath.display();
+        }
+
+        if (this.displayRocks) {
+            if (this.displayNormals) this.rockField.enableNormalViz();
+            else this.rockField.disableNormalViz();
+
+            this.rockField.display();
         }
 
         if (this.displaySun) {
