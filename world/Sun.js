@@ -8,8 +8,10 @@ export class Sun {
     this.sectors = options.slices ?? 32;
     this.stacks = options.stacks ?? 16;
     this.orbitRadius = options.radius ?? 80;
-    this.sunSize = options.sunSize ?? 1;
+    this.sunSize = options.sunSize ?? 8;
     this.followCamera = options.followCamera ?? false;
+    this.height = options.height ?? 55;
+    this.heightVariation = options.heightVariation ?? 12;
 
     this.geometry = new Sphere(scene, this.sectors, this.stacks, 1);
     
@@ -22,20 +24,36 @@ export class Sun {
     this.appearance.setEmission(1.0, 0.6, 0.0, 1.0);
   }
 
+  getPosition() {
+    const angle = this.scene.sunAngle ?? 0;
+    const x = this.orbitRadius * Math.cos(angle);
+    const y = this.height + Math.sin(angle) * this.heightVariation;
+    const z = this.orbitRadius * Math.sin(angle);
+
+    return [x, y, z];
+  }
+
+  getScenePosition() {
+    const position = this.getPosition();
+
+    if (!this.followCamera) {
+      return position;
+    }
+
+    const cameraPosition = this.scene.camera.position;
+    return [
+      position[0] + cameraPosition[0],
+      position[1] + cameraPosition[1],
+      position[2] + cameraPosition[2]
+    ];
+  }
+
   display() {
+    const position = this.getScenePosition();
+
     this.appearance.apply();
     this.scene.pushMatrix();
-
-    const angle = this.scene.sunAngle ?? 0;
-
-    const R = this.orbitRadius;
-
-    const x = R * Math.cos(angle);
-    const z = R * Math.sin(angle);
-    const y = 50 + Math.sin(angle) * 10;
-
-    this.scene.translate(x, y, z);
-
+    this.scene.translate(position[0], position[1], position[2]);
     this.scene.scale(this.sunSize, this.sunSize, this.sunSize);
 
     this.geometry.display();

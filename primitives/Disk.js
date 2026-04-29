@@ -25,7 +25,7 @@ export class Disk extends CGFobject {
         }
 
         for (let i = 1; i <= this.slices; i++) {
-            this.indices.push(0, i, i + 1);
+            this.indices.push(0, i + 1, i);
         }
 
         this.primitiveType = this.scene.gl.TRIANGLES;

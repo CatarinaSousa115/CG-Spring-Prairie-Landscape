@@ -17,6 +17,7 @@ export class MyInterface extends CGFinterface {
 
         this.createSceneFolder();
         this.createSkyFolder();
+        this.createCloudFolder();
         this.createWorldFolder();
         this.createGameplayFolder();
         this.createSunFolder();
@@ -39,26 +40,63 @@ export class MyInterface extends CGFinterface {
         skyFolder.open();
     }
 
-    createSunFolder()
-    {
+    createCloudFolder() {
+        const cloudFolder = this.gui.addFolder('Clouds');
+        cloudFolder.add(this.scene, 'displayClouds').name('Show clouds');
+        cloudFolder.add(this.scene.cloudLayer, 'followCamera').name('Follow camera');
+        cloudFolder.add(this.scene.cloudLayer, 'animated').name('Animate');
+        cloudFolder.add(this.scene.cloudLayer, 'orbitRadius', 20, 120, 1).name('Orbit radius');
+        cloudFolder.add(this.scene.cloudLayer, 'height', 5, 95, 1).name('Height');
+        cloudFolder.add(this.scene.cloudLayer, 'speed', -0.15, 0.15, 0.005).name('Wind speed');
+        cloudFolder.add(this.scene.cloudLayer, 'brightness', 0, 1, 0.01).name('Brightness');
+        cloudFolder.open();
+    }
+
+    createSunFolder() {
         const sunFolder = this.gui.addFolder('Sun');
-        sunFolder.add(this.scene,'displaySun').name('Show sun');
-        sunFolder.add(this.scene.sun,'followCamera').name('Follow Camera');
-		sunFolder.add(this.scene.sun, 'orbitRadius', 20, 300, 1).name('Orbit Radius');
-		sunFolder.add(this.scene.sun, 'sunSize', 1, 50, 1).name('Sun Size');
-		sunFolder.open();
-	}
+        sunFolder.add(this.scene, 'displaySun').name('Show sun');
+        sunFolder.add(this.scene, 'sunLightEnabled').name('Sun light');
+        sunFolder.add(this.scene, 'sunAngle', -Math.PI, Math.PI, 0.01).name('Sun angle');
+        sunFolder.add(this.scene.sun, 'followCamera').name('Follow camera');
+        sunFolder.add(this.scene.sun, 'orbitRadius', 20, 300, 1).name('Orbit radius');
+        sunFolder.add(this.scene.sun, 'height', 5, 120, 1).name('Height');
+        sunFolder.add(this.scene.sun, 'heightVariation', 0, 60, 1).name('Height variation');
+        sunFolder.add(this.scene.sun, 'sunSize', 1, 50, 1).name('Sun size');
+        sunFolder.open();
+    }
 
     createWorldFolder() {
         const worldFolder = this.gui.addFolder('World');
         worldFolder.add(this.scene, 'displayTerrain').name('Show terrain');
+        worldFolder.add(this.scene, 'displayDirtPatches').name('Show dirt patches');
+        worldFolder.add(this.scene, 'displayWagonPath').name('Show wagon path');
         worldFolder.add(this.scene.terrain, 'followCamera').name('Terrain follows sky');
-        worldFolder.add(this.scene.terrain, 'radius', 10, 300, 1).name('Terrain radius');
-        worldFolder.add(this.scene.terrain, 'height', -10, 10, 0.1).name('Terrain height');
+        worldFolder
+            .add(this.scene.terrain, 'radius', 10, 300, 1)
+            .name('Terrain radius')
+            .onChange((value) => this.scene.terrain.setRadius(value));
+        worldFolder
+            .add(this.scene.terrain, 'height', -10, 10, 0.1)
+            .name('Terrain height')
+            .onChange((value) => this.scene.terrain.setHeight(value));
+        worldFolder
+            .add(this.scene.terrain, 'elevation', 0, 12, 0.1)
+            .name('Hill height')
+            .onChange((value) => this.scene.terrain.setElevation(value));
+        worldFolder
+            .add(this.scene.terrain, 'hillScale', 0.2, 2.5, 0.05)
+            .name('Hill scale')
+            .onChange((value) => this.scene.terrain.setHillScale(value));
         worldFolder
             .add(this.scene.terrain, 'subdivisions', 1, 100, 1)
             .name('Terrain detail')
             .onChange((value) => this.scene.terrain.setSubdivisions(value));
+        worldFolder
+            .add(this.scene.dirtPatchLayer, 'patchScale', 0.4, 2.2, 0.05)
+            .name('Dirt patch scale');
+        worldFolder
+            .add(this.scene.wagonPath, 'width', 2, 14, 0.2)
+            .name('Path width');
         worldFolder.close();
     }
 

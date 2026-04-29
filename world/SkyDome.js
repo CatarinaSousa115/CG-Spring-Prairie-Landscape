@@ -13,12 +13,11 @@ export class SkyDome {
         this.geometry = new SemiSphere(scene, this.slices, this.stacks);
 
         this.appearance = new CGFappearance(scene);
-        this.appearance.setAmbient(1, 1, 1, 1);
-        this.appearance.setDiffuse(1, 1, 1, 1);
+        this.appearance.setAmbient(0.45, 0.65, 1.0, 1);
+        this.appearance.setDiffuse(0.45, 0.65, 1.0, 1);
+        this.appearance.setEmission(0.45, 0.65, 1.0, 1);
         this.appearance.setSpecular(0, 0, 0, 1);
         this.appearance.setShininess(1);
-        this.appearance.loadTexture("textures/sky.jpg");
-        this.appearance.setTextureWrap("REPEAT", "CLAMP_TO_EDGE");
     }
 
     display() {
