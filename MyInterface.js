@@ -20,6 +20,7 @@ export class MyInterface extends CGFinterface {
         this.createCloudFolder();
         this.createWorldFolder();
         this.createScatterFolder();
+        this.createGrassFolder();
         this.createGameplayFolder();
         this.createSunFolder();
         return true;
@@ -99,6 +100,31 @@ export class MyInterface extends CGFinterface {
             .add(this.scene.wagonPath, 'width', 2, 14, 0.2)
             .name('Path width');
         worldFolder.close();
+    }
+
+    createGrassFolder() {
+        const grassFolder = this.gui.addFolder('Grass');
+
+        grassFolder.add(this.scene, 'displayGrass').name('Show grass');
+
+        grassFolder
+            .add(this.scene.grassField, 'windSpeed', 0.0, 5.0, 0.05)
+            .name('Wind speed');
+        grassFolder
+            .add(this.scene.grassField, 'windStrength', 0.0, 0.6, 0.01)
+            .name('Wind strength');
+
+        grassFolder
+            .add(this.scene.grassField, 'numBlades', 1000, 20000, 500)
+            .name('Blade count')
+            .onChange(() => this.scene.grassField.rebuild());
+
+        grassFolder
+            .add(this.scene.grassField, 'deadRatio', 0.0, 1.0, 0.05)
+            .name('Dead ratio')
+            .onChange(() => this.scene.grassField.rebuild());
+
+        grassFolder.open();
     }
 
     createGameplayFolder() {

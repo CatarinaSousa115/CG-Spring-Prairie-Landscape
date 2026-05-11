@@ -6,11 +6,8 @@ import { CloudLayer } from "./world/CloudLayer.js";
 import { DirtPatchLayer } from "./world/DirtPatchLayer.js";
 import { WagonPath } from "./world/WagonPath.js";
 import { RockField } from "./world/RockField.js";
-import { GrassPatch } from "./world/GrassPatch.js";
-/**
- * MyScene
- * @constructor
- */
+import { GrassField } from "./world/GrassField.js";
+
 export class MyScene extends CGFscene {
     constructor() {
         super();
@@ -44,7 +41,7 @@ export class MyScene extends CGFscene {
             followCamera: false
         });
 
-        this.sun = new Sun(this,{
+        this.sun = new Sun(this, {
             radius: 82,
             sunSize: 7
         });
@@ -54,73 +51,42 @@ export class MyScene extends CGFscene {
             brightness: 0.72,
             followCamera: false
         });
+
         this.dirtPatchLayer = new DirtPatchLayer(this, this.terrain);
-        this.wagonPath = new WagonPath(this, this.terrain);
-        this.rockField = new RockField(this, this.terrain);
+        this.wagonPath      = new WagonPath(this, this.terrain);
+        this.rockField      = new RockField(this, this.terrain);
+
+        this.grassField = new GrassField(this, {
+            terrain:      this.terrain,
+            wagonPath:    this.wagonPath,
+            rockField:    this.rockField,
+            dirtLayer:    this.dirtPatchLayer,
+            numBlades:    12000,
+            areaRadius:   70,
+            deadRatio:    0.25,
+            windSpeed:    1.2,
+            windStrength: 0.18,
+        });
+
         this.initLights();
         this.setUpdatePeriod(50);
 
-        this.patchConfigs = [
-            // [x, z, numBlades, radius, isDead]
-            [10,   5,  300, 6, false],
-            [-8,  12,  250, 5, false],
-            [15, -10,  280, 7, false],
-            [-20,  3,  260, 6, false],
-            [25,   8,  220, 5, false],
-            [-5,  20,  300, 7, false],
-            [30, -15,  240, 6, false],
-            [-25, -8,  280, 5, false],
-            [18,  22,  200, 6, false],
-            [-15, 15,  260, 7, false],
-            [-30, 18,  240, 6, false],
-            [35,   2,  220, 5, false],
-            [-10, -18, 270, 6, false],
-            [20,  30,  250, 7, false],
-            [-35, -12, 230, 5, false],
-            // secas
-            [5,  -15,  200, 4, true],
-            [-12,  -5, 150, 3, true],
-            [22,   -3, 180, 4, true],
-            [-3,  -20, 160, 3, true],
-            [8,   -25, 200, 5, true],
-            [28,  -20, 170, 4, true],
-            [-22, -15, 150, 3, true],
-            [40,  -10, 180, 4, true],
-            [-40,   5, 160, 3, true],
-            [12,  -35, 190, 4, true],
-        ];
-
-        this.greenConfigs = this.patchConfigs.filter(c => !c[4]);
-        this.deadConfigs  = this.patchConfigs.filter(c =>  c[4]);
-
-        this.grassPatches     = [];
-        this.deadGrassPatches = [];
-
-        for (const [x, z, num, radius, isDead] of this.patchConfigs) {
-            const patch = new GrassPatch(this, num, radius, isDead, this.terrain, this.wagonPath, x, z);
-            if (isDead) this.deadGrassPatches.push(patch);
-            else        this.grassPatches.push(patch);
-        }
-
-        this.displayAxis = true;
-        this.displaySky = true;
-        this.displayTerrain = true;
-        this.displayNormals = false;
-        this.displaySun = true;
-        this.displayClouds = true;
+        this.displayAxis        = true;
+        this.displaySky         = true;
+        this.displayTerrain     = true;
+        this.displayNormals     = false;
+        this.displaySun         = true;
+        this.displayClouds      = true;
         this.displayDirtPatches = true;
-        this.displayWagonPath = true;
-        this.displayRocks = true;
-        this.sunLightEnabled = true;
-        this.scaleFactor = 2.0;
-        this.sunAngle = 0;
+        this.displayWagonPath   = true;
+        this.displayRocks       = true;
+        this.displayGrass       = true;
+        this.sunLightEnabled    = true;
+        this.scaleFactor        = 2.0;
+        this.sunAngle           = 0;
+        this.time               = 0;
 
         this.lastPathWidth = this.wagonPath.width;
-    }
-
-    rebuildGrass() {
-        for (const patch of this.grassPatches)     patch.rebuild();
-        for (const patch of this.deadGrassPatches) patch.rebuild();
     }
 
     initLights() {
@@ -163,11 +129,12 @@ export class MyScene extends CGFscene {
     }
 
     update(t) {
+        this.time = t;
         this.cloudLayer.update(t);
 
         if (this.wagonPath.width !== this.lastPathWidth) {
             this.lastPathWidth = this.wagonPath.width;
-            this.rebuildGrass();
+            this.grassField.rebuild();
         }
     }
 
@@ -190,75 +157,49 @@ export class MyScene extends CGFscene {
         if (this.displaySky) {
             if (this.displayNormals) this.skyDome.enableNormalViz();
             else this.skyDome.disableNormalViz();
-
             this.skyDome.display();
-
         }
 
         if (this.displayClouds) {
             if (this.displayNormals) this.cloudLayer.enableNormalViz();
             else this.cloudLayer.disableNormalViz();
-
             this.cloudLayer.display();
         }
 
         if (this.displayTerrain) {
             if (this.displayNormals) this.terrain.enableNormalViz();
             else this.terrain.disableNormalViz();
-
             this.terrain.display();
         }
 
         if (this.displayDirtPatches) {
             if (this.displayNormals) this.dirtPatchLayer.enableNormalViz();
             else this.dirtPatchLayer.disableNormalViz();
-
             this.dirtPatchLayer.display();
         }
 
         if (this.displayWagonPath) {
             if (this.displayNormals) this.wagonPath.enableNormalViz();
             else this.wagonPath.disableNormalViz();
-
             this.wagonPath.display();
         }
 
         if (this.displayRocks) {
             if (this.displayNormals) this.rockField.enableNormalViz();
             else this.rockField.disableNormalViz();
-
             this.rockField.display();
         }
 
         if (this.displaySun) {
-            if (this.displayNormals) 
-            {
-                this.sun.enableNormalViz();
-            }
-            else 
-            {
-                this.sun.disableNormalViz();
-            }
-
+            if (this.displayNormals) this.sun.enableNormalViz();
+            else this.sun.disableNormalViz();
             this.sun.display();
-        }    
-
-
-        for (let i = 0; i < this.grassPatches.length; i++) {
-            const [px, pz] = [this.greenConfigs[i][0], this.greenConfigs[i][1]];
-            this.pushMatrix();
-            this.translate(px, 0, pz);
-            this.grassPatches[i].display(px, pz);
-            this.popMatrix();
         }
 
-
-        for (let i = 0; i < this.deadGrassPatches.length; i++) {
-            const [px, pz] = [this.deadConfigs[i][0], this.deadConfigs[i][1]];
-            this.pushMatrix();
-            this.translate(px, 0, pz);
-            this.deadGrassPatches[i].display(px, pz);
-            this.popMatrix();
+        if (this.displayGrass) {
+            if (this.displayNormals) this.grassField.enableNormalViz();
+            else this.grassField.disableNormalViz();
+            this.grassField.display(this.time);
         }
 
         this.popMatrix();

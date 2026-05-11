@@ -78,4 +78,15 @@ export class DirtPatchLayer {
     disableNormalViz() {
         this.disk.disableNormalViz();
     }
+
+    isNearDirt(x, z, margin = 1.5) {
+        for (const patch of this.patches) {
+            const [px, pz, sx, sz] = patch;
+            const rx = Math.max(sx, sz) * this.patchScale + margin;
+            const dx = x - px;
+            const dz = z - pz;
+            if (dx * dx + dz * dz < rx * rx) return true;
+        }
+        return false;
+    }
 }
