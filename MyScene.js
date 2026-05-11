@@ -7,6 +7,7 @@ import { DirtPatchLayer } from "./world/DirtPatchLayer.js";
 import { WagonPath } from "./world/WagonPath.js";
 import { RockField } from "./world/RockField.js";
 import { GrassField } from "./world/Flora/Grass/GrassField.js";
+import { FlowerField } from "./world/Flora/Flowers/FlowerField.js"; 
 
 /**
  * MyScene
@@ -76,12 +77,18 @@ export class MyScene extends CGFscene {
     this.displayGrass = true;
     this.scaleFactor = 2.0;
     this.sunAngle = 0;
+    this.displayFlowers = true; 
 
     this.grassShader = new CGFshader(
       this.gl,
       "shaders/grass.vert",
       "shaders/grass.frag",
     );
+
+    this.flowerField = new FlowerField(this, this.terrain, {
+      count: 150, 
+    });
+
   }
 
   initLights() {
@@ -194,6 +201,10 @@ export class MyScene extends CGFscene {
       this.grassField.display();
 
       this.setActiveShader(this.defaultShader);
+    }
+
+    if (this.displayFlowers) {
+        this.flowerField.display();
     }
 
     if (this.displaySun) {

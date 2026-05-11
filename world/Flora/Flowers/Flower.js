@@ -1,6 +1,6 @@
 import { CGFappearance } from "../../../../lib/CGF.js";
 import { Sphere } from "../../../primitives/Sphere.js";
-import { Cylinder } from "../primitives/Cylinder.js";
+import { Cylinder } from "../../../primitives/Cylinder.js";
 
 export class Flower {
   constructor(scene, options = {}) {
