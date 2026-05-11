@@ -22,6 +22,7 @@ export class MyInterface extends CGFinterface {
         this.createScatterFolder();
         this.createGameplayFolder();
         this.createSunFolder();
+        this.createGrassFolder();
         return true;
     }
 
@@ -51,6 +52,13 @@ export class MyInterface extends CGFinterface {
         cloudFolder.add(this.scene.cloudLayer, 'speed', -0.15, 0.15, 0.005).name('Wind speed');
         cloudFolder.add(this.scene.cloudLayer, 'brightness', 0, 1, 0.01).name('Brightness');
         cloudFolder.open();
+    }
+
+    createGrassFolder()
+    {
+        const grassFolder = this.gui.addFolder('Grass');
+        grassFolder.add(this.scene,'displayGrass').name('Show Grass');
+        grassFolder.open();
     }
 
     createSunFolder() {
