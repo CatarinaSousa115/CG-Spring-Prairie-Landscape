@@ -66,4 +66,17 @@ export class WagonPath {
     disableNormalViz() {
         this.mesh.disableNormalViz();
     }
+
+
+    isNearPath(x, z, minDist = 5.0) {
+        const samples = 80;
+        for (let i = 0; i <= samples; i++) {
+            const t = i / samples;
+            const [px, pz] = this.getPoint(t);
+            const dx = x - px;
+            const dz = z - pz;
+            if (dx * dx + dz * dz < minDist * minDist) return true;
+        }
+        return false;
+    }
 }
