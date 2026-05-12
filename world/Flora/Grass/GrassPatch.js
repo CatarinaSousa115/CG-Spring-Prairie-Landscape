@@ -1,5 +1,5 @@
-import { CGFobject, CGFappearance } from '../../lib/CGF.js';
-import { GrassBlade } from '../primitives/GrassBlade.js';
+import { CGFobject, CGFappearance } from '../../../../lib/CGF.js';
+import { GrassBlade } from '../../../primitives/GrassBlade.js';
 
 export class GrassPatch extends CGFobject {
     constructor(scene, numBlades = 200, radius = 5, isDead = false, terrain = null, wagonPath = null, originX = 0, originZ = 0) {

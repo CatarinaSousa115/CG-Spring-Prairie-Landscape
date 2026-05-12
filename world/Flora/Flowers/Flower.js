@@ -11,7 +11,7 @@ export class Flower {
     this.color = options.color ?? [1, 0.3, 0.3];
 
     this.sphere = new Sphere(scene, 12, 8, 1);
-    this.cylinder = new Cylinder(scene, 12);
+    this.cylinder = new Cylinder(scene, 12, 1);
 
     this.stemAppearance = new CGFappearance(scene);
     this.stemAppearance.setAmbient(0.1, 0.3, 0.1, 1);

@@ -6,7 +6,7 @@ import { CloudLayer } from "./world/CloudLayer.js";
 import { DirtPatchLayer } from "./world/DirtPatchLayer.js";
 import { WagonPath } from "./world/WagonPath.js";
 import { RockField } from "./world/RockField.js";
-import { GrassField } from "./world/GrassField.js";
+import { GrassField } from "./world/Flora/Grass/GrassField.js";
 import { FlowerField } from "./world/Flora/Flowers/FlowerField.js"; 
 
 export class MyScene extends CGFscene {
@@ -48,7 +48,7 @@ export class MyScene extends CGFscene {
         });
         this.cloudLayer = new CloudLayer(this, {
             orbitRadius: 72,
-            height: 48,
+            height: 15,
             brightness: 0.72,
             followCamera: false
         });

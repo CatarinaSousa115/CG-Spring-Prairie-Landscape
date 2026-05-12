@@ -17,11 +17,10 @@ export class MyInterface extends CGFinterface {
 
         this.createSceneFolder();
         this.createSkyFolder();
-        this.createCloudFolder();
         this.createWorldFolder();
         this.createScatterFolder();
-        this.createGrassFolder();
         this.createGameplayFolder();
+        this.createCloudFolder();
         this.createSunFolder();
         this.createFloraFolder();
         return true;
@@ -32,7 +31,7 @@ export class MyInterface extends CGFinterface {
         sceneFolder.add(this.scene, 'displayAxis').name('Show axis');
         sceneFolder.add(this.scene, 'displayNormals').name('Show normals');
         sceneFolder.add(this.scene, 'scaleFactor', 0.1, 10.0).name('Scene scale');
-        sceneFolder.open();
+        sceneFolder.close();
     }
 
     createSkyFolder() {
@@ -40,7 +39,7 @@ export class MyInterface extends CGFinterface {
         skyFolder.add(this.scene, 'displaySky').name('Show sky');
         skyFolder.add(this.scene.skyDome, 'followCamera').name('Follow camera');
         skyFolder.add(this.scene.skyDome, 'radius', 20, 300, 1).name('Radius');
-        skyFolder.open();
+        skyFolder.close();
     }
 
     createCloudFolder() {
@@ -49,18 +48,39 @@ export class MyInterface extends CGFinterface {
         cloudFolder.add(this.scene.cloudLayer, 'followCamera').name('Follow camera');
         cloudFolder.add(this.scene.cloudLayer, 'animated').name('Animate');
         cloudFolder.add(this.scene.cloudLayer, 'orbitRadius', 20, 120, 1).name('Orbit radius');
-        cloudFolder.add(this.scene.cloudLayer, 'height', 5, 95, 1).name('Height');
+        cloudFolder.add(this.scene.cloudLayer, 'height', 5, 120, 1).name('Height');
         cloudFolder.add(this.scene.cloudLayer, 'speed', -0.15, 0.15, 0.005).name('Wind speed');
         cloudFolder.add(this.scene.cloudLayer, 'brightness', 0, 1, 0.01).name('Brightness');
-        cloudFolder.open();
+        cloudFolder.close();
     }
 
     createFloraFolder()
     {
         const floraFolder = this.gui.addFolder('Flora');
-        floraFolder.add(this.scene,'displayGrass').name('Show Grass');
-        floraFolder.add(this.scene,'displayFlowers').name('Show Flowers');
-        floraFolder.open();
+
+        const grassFolder = floraFolder.addFolder('Grass');
+        grassFolder.add(this.scene, 'displayGrass').name('Show grass');
+        grassFolder
+            .add(this.scene.grassField, 'windSpeed', 0.0, 5.0, 0.05)
+            .name('Wind speed');
+        grassFolder
+            .add(this.scene.grassField, 'windStrength', 0.0, 0.6, 0.01)
+            .name('Wind strength');
+        grassFolder
+            .add(this.scene.grassField, 'numBlades', 1000, 20000, 500)
+            .name('Blade count')
+            .onChange(() => this.scene.grassField.rebuild());
+        grassFolder
+            .add(this.scene.grassField, 'deadRatio', 0.0, 1.0, 0.05)
+            .name('Dead ratio')
+            .onChange(() => this.scene.grassField.rebuild());
+        grassFolder.close();
+
+        const flowersFolder = floraFolder.addFolder('Flowers');
+        flowersFolder.add(this.scene, 'displayFlowers').name('Show flowers');
+        flowersFolder.close();
+
+        floraFolder.close();
     }
 
     createSunFolder() {
@@ -73,7 +93,7 @@ export class MyInterface extends CGFinterface {
         sunFolder.add(this.scene.sun, 'height', 5, 120, 1).name('Height');
         sunFolder.add(this.scene.sun, 'heightVariation', 0, 60, 1).name('Height variation');
         sunFolder.add(this.scene.sun, 'sunSize', 1, 50, 1).name('Sun size');
-        sunFolder.open();
+        sunFolder.close();
     }
 
     createWorldFolder() {
@@ -111,30 +131,6 @@ export class MyInterface extends CGFinterface {
         worldFolder.close();
     }
 
-    createGrassFolder() {
-        const grassFolder = this.gui.addFolder('Grass');
-
-        grassFolder.add(this.scene, 'displayGrass').name('Show grass');
-
-        grassFolder
-            .add(this.scene.grassField, 'windSpeed', 0.0, 5.0, 0.05)
-            .name('Wind speed');
-        grassFolder
-            .add(this.scene.grassField, 'windStrength', 0.0, 0.6, 0.01)
-            .name('Wind strength');
-
-        grassFolder
-            .add(this.scene.grassField, 'numBlades', 1000, 20000, 500)
-            .name('Blade count')
-            .onChange(() => this.scene.grassField.rebuild());
-
-        grassFolder
-            .add(this.scene.grassField, 'deadRatio', 0.0, 1.0, 0.05)
-            .name('Dead ratio')
-            .onChange(() => this.scene.grassField.rebuild());
-
-        grassFolder.open();
-    }
 
     createGameplayFolder() {
         const gameplayFolder = this.gui.addFolder('Gameplay');
