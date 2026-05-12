@@ -29,7 +29,7 @@ export class WagonPath {
     }
 
     getPoint(t) {
-        const z = -72 + 138 * t;
+        const z = -100 + 200 * t;
         const x = Math.sin(t * Math.PI * 1.1 - 0.45) * 10 + Math.sin(t * Math.PI * 2.1) * 2.5;
 
         return [x, z];

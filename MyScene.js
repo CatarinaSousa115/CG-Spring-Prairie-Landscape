@@ -62,7 +62,7 @@ export class MyScene extends CGFscene {
             rockField:    this.rockField,
             dirtLayer:    this.dirtPatchLayer,
             numBlades:    12000,
-            areaRadius:   70,
+            areaRadius:   100,
             deadRatio:    0.25,
             windSpeed:    1.2,
             windStrength: 0.18,
@@ -85,6 +85,7 @@ export class MyScene extends CGFscene {
         this.scaleFactor        = 2.0;
         this.sunAngle           = 0;
         this.time               = 0;
+        this.startTime          = undefined;
 
         this.lastPathWidth = this.wagonPath.width;
     }
@@ -129,7 +130,10 @@ export class MyScene extends CGFscene {
     }
 
     update(t) {
-        this.time = t;
+        if (this.startTime === undefined) this.startTime = t;
+        
+        this.time = (t - this.startTime) * 0.001;
+        
         this.cloudLayer.update(t);
 
         if (this.wagonPath.width !== this.lastPathWidth) {

@@ -1,4 +1,4 @@
-import { CGFobject, CGFappearance } from "../../lib/CGF.js";
+import { CGFobject, CGFappearance, CGFshader } from "../../lib/CGF.js";
 import { GrassBlade } from "../primitives/GrassBlade.js";
 
 export class GrassField extends CGFobject {
@@ -20,20 +20,17 @@ export class GrassField extends CGFobject {
         this.windSpeed = options.windSpeed ?? 1.2;
         this.windStrength = options.windStrength ?? 0.18;
 
+        this.grassShader = new CGFshader(
+            scene.gl,
+            "shaders/grass.vert",
+            "shaders/grass.frag",
+        );
+
+        this.greenColor = [0.15, 0.55, 0.1, 1.0];
+        this.deadColor = [0.6, 0.5, 0.1, 1.0];
+
         this.blades = [];
         this.rebuild();
-
-        this.greenMaterial = new CGFappearance(scene);
-        this.greenMaterial.setAmbient(0.1, 0.15, 0.0, 1.0);
-        this.greenMaterial.setDiffuse(0.15, 0.55, 0.1, 1.0);
-        this.greenMaterial.setSpecular(0.0, 0.0, 0.0, 1.0);
-        this.greenMaterial.setShininess(5);
-
-        this.deadMaterial = new CGFappearance(scene);
-        this.deadMaterial.setAmbient(0.15, 0.12, 0.0, 1.0);
-        this.deadMaterial.setDiffuse(0.6, 0.5, 0.1, 1.0);
-        this.deadMaterial.setSpecular(0.0, 0.0, 0.0, 1.0);
-        this.deadMaterial.setShininess(5);
     }
 
     rebuild() {
@@ -46,52 +43,68 @@ export class GrassField extends CGFobject {
             ? this.wagonPath.width / 2 + 1.0
             : 0;
 
+        const terrainRadius = this.terrain ? this.terrain.radius : this.areaRadius;
+        const edgeLimit     = terrainRadius;
+
         const maxAttempts = this.numBlades * 20;
         let attempts = 0;
 
         while (this.blades.length < this.numBlades && attempts < maxAttempts) {
-            attempts++;
+        attempts++;
 
-            const x = (Math.random() - 0.5) * this.areaRadius * 2;
-            const z = (Math.random() - 0.5) * this.areaRadius * 2;
+        const x = (Math.random() - 0.5) * this.areaRadius * 2;
+        const z = (Math.random() - 0.5) * this.areaRadius * 2;
 
-            if (x * x + z * z > this.areaRadius * this.areaRadius) continue;
+        if (x * x + z * z > this.areaRadius * this.areaRadius) 
+            continue;
 
-            if (this.wagonPath && this.wagonPath.isNearPath(x, z, pathMargin))
-                continue;
-            if (this.rockField && this.rockField.isNearRock(x, z, this.rockMargin))
-                continue;
-            if (this.dirtLayer && this.dirtLayer.isNearDirt(x, z, this.dirtMargin))
-                continue;
+        if (x * x + z * z > edgeLimit * edgeLimit) 
+            continue;
 
-            this.blades.push({
-                x,
-                z,
-                rotY: Math.random() * Math.PI,
-                height: 0.3 + Math.random() * 0.5,
-                dead: Math.random() < this.deadRatio,
-                phase: Math.random() * Math.PI * 2,
-            });
+        if (this.wagonPath && this.wagonPath.isNearPath(x, z, pathMargin))
+            continue;
+        if (this.rockField && this.rockField.isNearRock(x, z, this.rockMargin))
+            continue;
+        if (this.dirtLayer && this.dirtLayer.isNearDirt(x, z, this.dirtMargin))
+            continue;
+
+        this.blades.push({
+            x,
+            z,
+            rotY: Math.random() * Math.PI,
+            height: 0.3 + Math.random() * 0.5,
+            dead: Math.random() < this.deadRatio,
+            phase: Math.random() * Math.PI * 2,
+        });
         }
     }
 
     display(t = 0) {
+        this.scene.setActiveShader(this.grassShader);
+
+        this.grassShader.setUniformsValues({
+        uTime: t,
+        uWindSpeed: this.windSpeed,
+        uWindStrength: this.windStrength,
+        });
+
         for (const b of this.blades) {
-            const y = this.terrain ? this.terrain.getHeightAt(b.x, b.z) : 0;
-            const sway =
-                Math.sin(t * 0.001 * this.windSpeed + b.phase) * this.windStrength;
+        const y = this.terrain ? this.terrain.getHeightAt(b.x, b.z) : 0;
 
-            if (b.dead) this.deadMaterial.apply();
-            else this.greenMaterial.apply();
+        this.grassShader.setUniformsValues({
+            uBaseColor: b.dead ? this.deadColor : this.greenColor,
+            uPhase: b.phase,
+        });
 
-            this.scene.pushMatrix();
-            this.scene.translate(b.x, y, b.z);
-            this.scene.rotate(b.rotY, 0, 1, 0);
-            this.scene.rotate(sway, 0, 0, 1);
-            this.scene.scale(1, b.height, 1);
-            this.blade.display();
-            this.scene.popMatrix();
+        this.scene.pushMatrix();
+        this.scene.translate(b.x, y, b.z);
+        this.scene.rotate(b.rotY, 0, 1, 0);
+        this.scene.scale(1, b.height, 1);
+        this.blade.display();
+        this.scene.popMatrix();
         }
+
+        this.scene.setActiveShader(this.scene.defaultShader);
     }
 
     enableNormalViz() {
