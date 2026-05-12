@@ -7,6 +7,7 @@ import { DirtPatchLayer } from "./world/DirtPatchLayer.js";
 import { WagonPath } from "./world/WagonPath.js";
 import { RockField } from "./world/RockField.js";
 import { GrassField } from "./world/GrassField.js";
+import { FlowerField } from "./world/Flora/Flowers/FlowerField.js"; 
 
 export class MyScene extends CGFscene {
     constructor() {
@@ -81,6 +82,7 @@ export class MyScene extends CGFscene {
         this.displayWagonPath   = true;
         this.displayRocks       = true;
         this.displayGrass       = true;
+        this.displayFlowers     = true; 
         this.sunLightEnabled    = true;
         this.scaleFactor        = 2.0;
         this.sunAngle           = 0;
@@ -88,6 +90,11 @@ export class MyScene extends CGFscene {
         this.startTime          = undefined;
 
         this.lastPathWidth = this.wagonPath.width;
+
+        this.flowerField = new FlowerField(this, this.terrain, {
+            count: 150,
+        });
+
     }
 
     initLights() {
@@ -192,6 +199,10 @@ export class MyScene extends CGFscene {
             if (this.displayNormals) this.rockField.enableNormalViz();
             else this.rockField.disableNormalViz();
             this.rockField.display();
+        }
+
+        if (this.displayFlowers) {
+            this.flowerField.display();
         }
 
         if (this.displaySun) {
