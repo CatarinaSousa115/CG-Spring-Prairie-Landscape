@@ -7,6 +7,7 @@ import { DirtPatchLayer } from "./world/DirtPatchLayer.js";
 import { WagonPath } from "./world/WagonPath.js";
 import { RockField } from "./world/RockField.js";
 import { Wagon } from "./objects/wagon/Wagon.js";
+import { Horse } from "./objects/horse/Horse.js";
 
 /**
  * MyScene
@@ -61,6 +62,10 @@ export class MyScene extends CGFscene {
         this.wagon = new Wagon(this, this.terrain);
         this.wagon.x = 0;
         this.wagon.z = 0;
+        this.horses = [
+            new Horse(this, this.terrain, { lateralOffset: -0.72 }),
+            new Horse(this, this.terrain, { lateralOffset: 0.72 })
+        ];
         this.initLights();
         this.setUpdatePeriod(50);
 
@@ -74,6 +79,7 @@ export class MyScene extends CGFscene {
         this.displayWagonPath = true;
         this.displayRocks = true;
         this.displayWagon = true;
+        this.displayHorse = true;
         this.sunLightEnabled = true;
         this.scaleFactor = 2.0;
         this.sunAngle = 0;
@@ -123,6 +129,12 @@ export class MyScene extends CGFscene {
 
         if (this.wagon) {
             this.wagon.update(t);
+        }
+
+        if (this.horses && this.wagon) {
+            for (const horse of this.horses) {
+                horse.followWagon(this.wagon);
+            }
         }
     }
 
@@ -187,6 +199,15 @@ export class MyScene extends CGFscene {
 
         if (this.displayWagon) {
             this.wagon.display();
+        }
+
+        if (this.displayHorse) {
+            for (const horse of this.horses) {
+                if (this.displayNormals) horse.enableNormalViz();
+                else horse.disableNormalViz();
+
+                horse.display();
+            }
         }
 
         if (this.displaySun) {
