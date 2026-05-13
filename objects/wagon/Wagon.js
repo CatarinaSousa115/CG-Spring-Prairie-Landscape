@@ -2,6 +2,8 @@
 import { CGFappearance, CGFobject } from "../../../lib/CGF.js";
 import { WagonAxle } from "./WagonAxle.js";
 import { WagonBed } from "./WagonBed.js";
+import { WagonCover } from "./WagonCover.js";
+import { WagonTongue } from "./WagonTongue.js";
 import { WagonWheel } from "./WagonWheel.js";
 import { mergeWagonConfig } from "./WagonConfig.js";
 
@@ -46,12 +48,16 @@ export class Wagon extends CGFobject {
         this.wheelAppearance = this.createAppearance(this.config.materials.wheelWood);
         this.axleAppearance = this.createAppearance(this.config.materials.axleWood);
         this.bedAppearance = this.createAppearance(this.config.materials.bedWood);
+        this.bedSeamAppearance = this.createAppearance(this.config.materials.bedSeams);
+        this.tongueAppearance = this.createAppearance(this.config.materials.tongueWood);
+        this.coverAppearance = this.createAppearance(this.config.materials.coverCanvas);
+        this.coverFrameAppearance = this.createAppearance(this.config.materials.coverFrameWood);
 
         this.bed = components.bed ?? new WagonBed(scene, this.config.bed);
-        this.cover = components.cover ?? null;
+        this.cover = components.cover ?? new WagonCover(scene, this.config.cover);
         this.frontAxle = components.frontAxle ?? new WagonAxle(scene);
         this.rearAxle = components.rearAxle ?? new WagonAxle(scene);
-        this.tongue = components.tongue ?? null;
+        this.tongue = components.tongue ?? new WagonTongue(scene, this.config.tongue);
     }
 
     update(t) {
@@ -124,17 +130,27 @@ export class Wagon extends CGFobject {
         this.scene.translate(0, this.groundClearance + this.bodyHeight / 2, 0);
         this.scene.scale(this.bodyWidth, this.bodyHeight, this.bodyLength);
         this.bedAppearance.apply();
-        this.bed.display();
+        this.bed.display(null, this.bedSeamAppearance);
         this.scene.popMatrix();
     }
 
     displayCover() {
         if (!this.cover) return;
 
+        const cover = this.config.cover;
+
         this.scene.pushMatrix();
-        this.scene.translate(0, this.groundClearance + this.bodyHeight + 0.55, -0.55);
-        this.scene.scale(this.bodyWidth * 0.95, 1.05, this.bodyLength * 0.48);
-        this.cover.display();
+        this.scene.translate(
+            0,
+            this.groundClearance + this.bodyHeight + cover.yOffset,
+            cover.zOffset
+        );
+        this.scene.scale(
+            this.bodyWidth * cover.widthRatio,
+            cover.height,
+            this.bodyLength * cover.lengthRatio
+        );
+        this.cover.display(this.coverAppearance, this.coverFrameAppearance);
 
         this.scene.popMatrix();
     }
@@ -181,9 +197,11 @@ export class Wagon extends CGFobject {
     displayTongue() {
         if (!this.tongue) return;
 
+        const tongue = this.config.tongue;
+
         this.scene.pushMatrix();
-        this.scene.translate(0, -0.05, 1.4);
-        this.scene.scale(0.12, 0.12, 2.4);
+        this.scene.translate(0, tongue.yOffset, tongue.zOffset);
+        this.tongueAppearance.apply();
         this.tongue.display();
 
         this.scene.popMatrix();
