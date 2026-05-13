@@ -1,5 +1,7 @@
 
 import { CGFappearance, CGFobject } from "../../../lib/CGF.js";
+import { WagonAxle } from "./WagonAxle.js";
+import { WagonBed } from "./WagonBed.js";
 import { WagonWheel } from "./WagonWheel.js";
 import { mergeWagonConfig } from "./WagonConfig.js";
 
@@ -42,11 +44,13 @@ export class Wagon extends CGFobject {
             rearRight: new WagonWheel(scene, wheel)
         };
         this.wheelAppearance = this.createAppearance(this.config.materials.wheelWood);
+        this.axleAppearance = this.createAppearance(this.config.materials.axleWood);
+        this.bedAppearance = this.createAppearance(this.config.materials.bedWood);
 
-        this.bed = components.bed ?? null;
+        this.bed = components.bed ?? new WagonBed(scene, this.config.bed);
         this.cover = components.cover ?? null;
-        this.frontAxle = components.frontAxle ?? null;
-        this.rearAxle = components.rearAxle ?? null;
+        this.frontAxle = components.frontAxle ?? new WagonAxle(scene);
+        this.rearAxle = components.rearAxle ?? new WagonAxle(scene);
         this.tongue = components.tongue ?? null;
     }
 
@@ -119,6 +123,7 @@ export class Wagon extends CGFobject {
         this.scene.pushMatrix();
         this.scene.translate(0, this.groundClearance + this.bodyHeight / 2, 0);
         this.scene.scale(this.bodyWidth, this.bodyHeight, this.bodyLength);
+        this.bedAppearance.apply();
         this.bed.display();
         this.scene.popMatrix();
     }
@@ -168,6 +173,7 @@ export class Wagon extends CGFobject {
 
         this.scene.pushMatrix();
         this.scene.scale(this.bodyWidth + 0.85, 0.08, 0.08);
+        this.axleAppearance.apply();
         axle.display();
         this.scene.popMatrix();
     }
