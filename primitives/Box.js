@@ -36,4 +36,23 @@ export class Box extends CGFobject {
         this.texCoords.push(0, 0, 1, 0, 1, 1, 0, 1);
         this.indices.push(base, base + 1, base + 2, base, base + 2, base + 3);
     }
+
+    displayScaled(x, y, z, width, height, length) {
+        this.scene.pushMatrix();
+        this.scene.translate(x, y, z);
+        this.scene.scale(width, height, length);
+        this.display();
+        this.scene.popMatrix();
+    }
+
+    displayBetween(x1, x2, y1, y2, z1, z2) {
+        this.displayScaled(
+            (x1 + x2) / 2,
+            (y1 + y2) / 2,
+            (z1 + z2) / 2,
+            x2 - x1,
+            y2 - y1,
+            z2 - z1
+        );
+    }
 }

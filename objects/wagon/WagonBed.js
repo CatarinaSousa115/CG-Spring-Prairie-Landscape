@@ -3,7 +3,6 @@ import { Box } from "../../primitives/Box.js";
 // Caixa aberta unitária, centrada na origem.
 export class WagonBed {
     constructor(scene, options = {}) {
-        this.scene = scene;
         this.box = new Box(scene);
         this.floorThickness = options.floorThickness ?? 0.12;
         this.sideThickness = options.sideThickness ?? 0.08;
@@ -27,7 +26,7 @@ export class WagonBed {
         const s = this.sideThickness;
         const p = this.cornerPostWidth;
 
-        this.displayBox(-0.5, 0.5, -0.5, -0.5 + f, -0.5, 0.5);
+        this.box.displayBetween(-0.5, 0.5, -0.5, -0.5 + f, -0.5, 0.5);
         this.displayEndBoards(-0.5, -0.5 + s, -0.5 + p, 0.5 - p);
         this.displayEndBoards(0.5 - s, 0.5, -0.5 + p, 0.5 - p);
         this.displaySideBoards(-0.5, -0.5 + s, -0.5 + p, 0.5 - p);
@@ -47,7 +46,7 @@ export class WagonBed {
         const boards = this.boardRanges(this.sideBoardCount);
 
         for (const [y1, y2] of boards) {
-            this.displayBox(x1, x2, y1, y2, z1, z2);
+            this.box.displayBetween(x1, x2, y1, y2, z1, z2);
         }
     }
 
@@ -55,7 +54,7 @@ export class WagonBed {
         const boards = this.boardRanges(this.endBoardCount);
 
         for (const [y1, y2] of boards) {
-            this.displayBox(x1, x2, y1, y2, z1, z2);
+            this.box.displayBetween(x1, x2, y1, y2, z1, z2);
         }
     }
 
@@ -64,10 +63,10 @@ export class WagonBed {
         const p = this.cornerPostWidth;
         const h = 0.055;
 
-        this.displayBox(-0.5 + p, 0.5 - p, 0.5 - h, 0.5, -0.5, -0.5 + s);
-        this.displayBox(-0.5 + p, 0.5 - p, 0.5 - h, 0.5, 0.5 - s, 0.5);
-        this.displayBox(-0.5, -0.5 + s, 0.5 - h, 0.5, -0.5 + p, 0.5 - p);
-        this.displayBox(0.5 - s, 0.5, 0.5 - h, 0.5, -0.5 + p, 0.5 - p);
+        this.box.displayBetween(-0.5 + p, 0.5 - p, 0.5 - h, 0.5, -0.5, -0.5 + s);
+        this.box.displayBetween(-0.5 + p, 0.5 - p, 0.5 - h, 0.5, 0.5 - s, 0.5);
+        this.box.displayBetween(-0.5, -0.5 + s, 0.5 - h, 0.5, -0.5 + p, 0.5 - p);
+        this.box.displayBetween(0.5 - s, 0.5, 0.5 - h, 0.5, -0.5 + p, 0.5 - p);
     }
 
     displaySideSeams(x) {
@@ -79,11 +78,11 @@ export class WagonBed {
 
         for (let i = 0; i < boards.length - 1; i++) {
             const y = boards[i][1] + this.boardGap / 2;
-            this.displayBox(x1, x2, y - t / 2, y + t / 2, -0.5 + p, 0.5 - p);
+            this.box.displayBetween(x1, x2, y - t / 2, y + t / 2, -0.5 + p, 0.5 - p);
         }
 
         for (const z of [-0.25, 0, 0.25]) {
-            this.displayBox(x1, x2, y1, 0.5, z - t / 2, z + t / 2);
+            this.box.displayBetween(x1, x2, y1, 0.5, z - t / 2, z + t / 2);
         }
     }
 
@@ -91,12 +90,11 @@ export class WagonBed {
         const t = this.seamThickness;
         const [z1, z2] = this.outsideRange(z, t);
         const boards = this.boardRanges(this.endBoardCount);
-        const s = this.sideThickness;
         const p = this.cornerPostWidth;
 
         for (let i = 0; i < boards.length - 1; i++) {
             const y = boards[i][1] + this.boardGap / 2;
-            this.displayBox(-0.5 + p, 0.5 - p, y - t / 2, y + t / 2, z1, z2);
+            this.box.displayBetween(-0.5 + p, 0.5 - p, y - t / 2, y + t / 2, z1, z2);
         }
     }
 
@@ -111,10 +109,10 @@ export class WagonBed {
         const w = this.cornerPostWidth;
         const y1 = -0.5 + this.floorThickness;
 
-        this.displayBox(-0.5, -0.5 + w, y1, 0.5, -0.5, -0.5 + w);
-        this.displayBox(0.5 - w, 0.5, y1, 0.5, -0.5, -0.5 + w);
-        this.displayBox(-0.5, -0.5 + w, y1, 0.5, 0.5 - w, 0.5);
-        this.displayBox(0.5 - w, 0.5, y1, 0.5, 0.5 - w, 0.5);
+        this.box.displayBetween(-0.5, -0.5 + w, y1, 0.5, -0.5, -0.5 + w);
+        this.box.displayBetween(0.5 - w, 0.5, y1, 0.5, -0.5, -0.5 + w);
+        this.box.displayBetween(-0.5, -0.5 + w, y1, 0.5, 0.5 - w, 0.5);
+        this.box.displayBetween(0.5 - w, 0.5, y1, 0.5, 0.5 - w, 0.5);
     }
 
     boardRanges(count) {
@@ -130,18 +128,6 @@ export class WagonBed {
         }
 
         return ranges;
-    }
-
-    displayBox(x1, x2, y1, y2, z1, z2) {
-        this.scene.pushMatrix();
-        this.scene.translate(
-            (x1 + x2) / 2,
-            (y1 + y2) / 2,
-            (z1 + z2) / 2
-        );
-        this.scene.scale(x2 - x1, y2 - y1, z2 - z1);
-        this.box.display();
-        this.scene.popMatrix();
     }
 
     enableNormalViz() {

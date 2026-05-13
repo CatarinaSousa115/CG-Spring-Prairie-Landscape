@@ -1,6 +1,6 @@
 
 import { CGFappearance, CGFobject } from "../../../lib/CGF.js";
-import { WagonAxle } from "./WagonAxle.js";
+import { Box } from "../../primitives/Box.js";
 import { WagonBed } from "./WagonBed.js";
 import { WagonCover } from "./WagonCover.js";
 import { WagonTongue } from "./WagonTongue.js";
@@ -55,8 +55,8 @@ export class Wagon extends CGFobject {
 
         this.bed = components.bed ?? new WagonBed(scene, this.config.bed);
         this.cover = components.cover ?? new WagonCover(scene, this.config.cover);
-        this.frontAxle = components.frontAxle ?? new WagonAxle(scene);
-        this.rearAxle = components.rearAxle ?? new WagonAxle(scene);
+        this.frontAxle = components.frontAxle ?? new Box(scene);
+        this.rearAxle = components.rearAxle ?? new Box(scene);
         this.tongue = components.tongue ?? new WagonTongue(scene, this.config.tongue);
     }
 
