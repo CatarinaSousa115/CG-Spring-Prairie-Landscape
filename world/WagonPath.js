@@ -7,7 +7,7 @@ export class WagonPath {
         this.terrain = terrain;
 
         this.visible = options.visible ?? true;
-        this.width = options.width ?? 4.8;
+        this.width = options.width ?? 12;
         this.heightOffset = options.heightOffset ?? 0.14;
         this.sampleCount = options.sampleCount ?? 90;
         this.lastTerrainRevision = -1;

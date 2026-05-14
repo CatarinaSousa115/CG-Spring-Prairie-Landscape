@@ -6,6 +6,8 @@ import { CloudLayer } from "./world/CloudLayer.js";
 import { DirtPatchLayer } from "./world/DirtPatchLayer.js";
 import { WagonPath } from "./world/WagonPath.js";
 import { RockField } from "./world/RockField.js";
+import { Wagon } from "./objects/wagon/Wagon.js";
+
 import { GrassField } from "./world/Flora/Grass/GrassField.js";
 import { FlowerField } from "./world/Flora/Flowers/FlowerField.js"; 
 
@@ -56,6 +58,9 @@ export class MyScene extends CGFscene {
         this.dirtPatchLayer = new DirtPatchLayer(this, this.terrain);
         this.wagonPath      = new WagonPath(this, this.terrain);
         this.rockField      = new RockField(this, this.terrain);
+        this.wagon          = new Wagon(this, this.terrain);
+        this.wagon.x = 0;
+        this.wagon.z = 0;
 
         this.grassField = new GrassField(this, {
             terrain:      this.terrain,
@@ -68,7 +73,6 @@ export class MyScene extends CGFscene {
             windSpeed:    1.2,
             windStrength: 0.18,
         });
-
         this.initLights();
         this.setUpdatePeriod(50);
 
@@ -81,6 +85,7 @@ export class MyScene extends CGFscene {
         this.displayDirtPatches = true;
         this.displayWagonPath   = true;
         this.displayRocks       = true;
+        this.displayWagon       = true;
         this.displayGrass       = true;
         this.displayFlowers     = true; 
         this.sunLightEnabled    = true;
@@ -126,10 +131,10 @@ export class MyScene extends CGFscene {
 
     initCameras() {
         this.camera = new CGFcamera(
-            0.4,
+            0.6,
             0.1,
             500,
-            vec3.fromValues(10, 10, 10),
+            vec3.fromValues(45, 28, 45),
             vec3.fromValues(0, 0, 0)
         );
     }
@@ -140,6 +145,10 @@ export class MyScene extends CGFscene {
         this.time = (t - this.startTime) * 0.001;
         
         this.cloudLayer.update(t);
+
+        if (this.wagon) {
+            this.wagon.update(t);
+        }
 
         if (this.wagonPath.width !== this.lastPathWidth) {
             this.lastPathWidth = this.wagonPath.width;
@@ -201,6 +210,10 @@ export class MyScene extends CGFscene {
 
         if (this.displayFlowers) {
             this.flowerField.display();
+        }
+
+        if (this.displayWagon) {
+            this.wagon.display();
         }
 
         if (this.displaySun) {
