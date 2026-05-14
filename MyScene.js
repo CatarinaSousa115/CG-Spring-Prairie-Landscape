@@ -91,9 +91,7 @@ export class MyScene extends CGFscene {
 
         this.lastPathWidth = this.wagonPath.width;
 
-        this.flowerField = new FlowerField(this, this.terrain, {
-            count: 150,
-        });
+        this.flowerField = new FlowerField(this, 350, 100,        this.terrain, this.wagonPath, 0, 0)
 
     }
 

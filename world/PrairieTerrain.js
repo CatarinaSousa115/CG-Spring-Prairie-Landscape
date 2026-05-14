@@ -150,11 +150,10 @@ export class PrairieTerrain {
         const v = (z / this.radius + 1) * 0.5;
 
         const mapX = u * (this.heightMapResolution - 1);
-
         const mapZ = v * (this.heightMapResolution - 1);
 
-        const x0 = Math.floor(mapX);
-        const z0 = Math.floor(mapZ);
+        const x0 = Math.max(0, Math.min(this.heightMapResolution - 1, Math.floor(mapX)));
+        const z0 = Math.max(0, Math.min(this.heightMapResolution - 1, Math.floor(mapZ)));
 
         return this.biomeMap[z0][x0];
     }

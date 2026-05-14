@@ -54,8 +54,7 @@ export class MyInterface extends CGFinterface {
         cloudFolder.close();
     }
 
-    createFloraFolder()
-    {
+    createFloraFolder() {
         const floraFolder = this.gui.addFolder('Flora');
 
         const grassFolder = floraFolder.addFolder('Grass');
@@ -78,6 +77,14 @@ export class MyInterface extends CGFinterface {
 
         const flowersFolder = floraFolder.addFolder('Flowers');
         flowersFolder.add(this.scene, 'displayFlowers').name('Show flowers');
+        flowersFolder
+            .add(this.scene.flowerField, 'numFlowers', 50, 1000, 10)
+            .name('Flower count')
+            .onChange(() => this.scene.flowerField.rebuild());
+        flowersFolder
+            .add(this.scene.flowerField, 'radius', 10, 100, 1)
+            .name('Field radius')
+            .onChange(() => this.scene.flowerField.rebuild());
         flowersFolder.close();
 
         floraFolder.close();
