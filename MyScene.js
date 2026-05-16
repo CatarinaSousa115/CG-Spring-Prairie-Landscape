@@ -36,12 +36,14 @@ export class MyScene extends CGFscene {
             followCamera: false
         });
         this.terrain = new PrairieTerrain(this, {
-            radius: this.skyDome.radius,
-            subdivisions: 40,
-            elevation: 3.2,
-            hillScale: 0.85,
-            height: 0,
-            followCamera: false
+          radius: this.skyDome.radius,
+          subdivisions: 40,
+          elevation: 3.2,
+          hillScale: 0.85,
+          height: 0,
+          followCamera: false,
+          texturePath: "textures/prairie.png",
+          textureTiling: 25,
         });
 
         this.sun = new Sun(this, {
