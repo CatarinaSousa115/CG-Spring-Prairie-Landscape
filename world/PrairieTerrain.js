@@ -10,13 +10,12 @@ export class PrairieTerrain {
     this.radius = options.radius ?? 80;
     this.subdivisions = options.subdivisions ?? 40;
     this.height = options.height ?? 0;
-    this.elevation = options.elevation ?? 3.2;
+    this.elevation = 6;
     this.heightMapResolution = options.heightMapResolution ?? 96;
-    this.hillScale = options.hillScale ?? 1;
+    this.hillScale = options.hillScale ?? 1 ;
     this.texturePath = options.texturePath ?? "textures/prairie.png";
     this.textureTiling = options.textureTiling ?? 25;
 
-    // White so the texture renders at its true colours.
     this.ambient = options.ambient ?? [1, 1, 1];
     this.diffuse = options.diffuse ?? [1, 1, 1];
     this.specular = options.specular ?? [0.02, 0.02, 0.02];

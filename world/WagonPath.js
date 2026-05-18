@@ -6,10 +6,10 @@ export class WagonPath {
     this.scene = scene;
     this.terrain = terrain;
 
-    this.visible = options.visible ?? true;
-    this.width = options.width ?? 12;
-    this.heightOffset = options.heightOffset ?? 0.14;
-    this.sampleCount = options.sampleCount ?? 90;
+    this.visible = true;
+    this.width = 11;
+    this.heightOffset = 0.35;
+    this.sampleCount = 240;
     this.lastTerrainRevision = -1;
     this.lastWidth = this.width;
 
@@ -30,8 +30,16 @@ export class WagonPath {
     this.appearance.setShininess(3);
     this.appearance.setTexture(this.texture);
     this.appearance.setTextureWrap("REPEAT", "REPEAT");
-  }
 
+    this.mesh.updateBuffers({
+      width: this.width,
+      samples: this.sampleCount,
+      heightOffset: this.heightOffset,
+      pathSampler: this.getPoint.bind(this),
+      heightSampler: this.terrain.getHeightAt.bind(this.terrain),
+    });
+  }
+  
   getPoint(t) {
     const z = -100 + 200 * t;
     const x =
