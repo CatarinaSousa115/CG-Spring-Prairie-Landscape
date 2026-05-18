@@ -1,4 +1,4 @@
-import { CGFscene, CGFcamera, CGFaxis } from "../lib/CGF.js";
+import { CGFscene, CGFcamera, CGFaxis, CGFtexture } from "../lib/CGF.js";
 import { SkyDome } from "./world/SkyDome.js";
 import { PrairieTerrain } from "./world/PrairieTerrain.js";
 import { Sun } from "./world/Sun.js";
@@ -8,6 +8,7 @@ import { WagonPath } from "./world/WagonPath.js";
 import { RockField } from "./world/RockField.js";
 import { Wagon } from "./objects/wagon/Wagon.js";
 import { Horse } from "./objects/horse/Horse.js";
+import { ObjModel } from "./primitives/ObjModel.js";
 
 /**
  * MyScene
@@ -62,9 +63,19 @@ export class MyScene extends CGFscene {
         this.wagon = new Wagon(this, this.terrain);
         this.wagon.x = 0;
         this.wagon.z = 0;
+        this.horseModel = new ObjModel(this, "models/horse/horse.obj");
+        this.horseTexture = new CGFtexture(this, "models/horse/Horse_v01.jpg");
         this.horses = [
-            new Horse(this, this.terrain, { lateralOffset: -0.72 }),
-            new Horse(this, this.terrain, { lateralOffset: 0.72 })
+            new Horse(this, this.terrain, {
+                model: this.horseModel,
+                texture: this.horseTexture,
+                lateralOffset: -0.95
+            }),
+            new Horse(this, this.terrain, {
+                model: this.horseModel,
+                texture: this.horseTexture,
+                lateralOffset: 0.95
+            })
         ];
         this.initLights();
         this.setUpdatePeriod(50);

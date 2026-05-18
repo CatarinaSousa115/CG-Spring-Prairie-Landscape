@@ -5,7 +5,7 @@ export class Horse {
     constructor(scene, terrain = null, options = {}) {
         this.scene = scene;
         this.terrain = terrain;
-        this.model = new ObjModel(scene, options.modelPath ?? "models/horse/horse.obj");
+        this.model = options.model ?? new ObjModel(scene, options.modelPath ?? "models/horse/horse.obj");
 
         this.x = options.x ?? 0;
         this.y = options.y ?? 0;
@@ -18,7 +18,7 @@ export class Horse {
         this.rotationOffset = options.rotationOffset ?? 0;
         this.sourceIsZUp = options.sourceIsZUp ?? true;
 
-        this.texture = new CGFtexture(scene, options.texturePath ?? "models/horse/Horse_v01.jpg");
+        this.texture = options.texture ?? new CGFtexture(scene, options.texturePath ?? "models/horse/Horse_v01.jpg");
         this.appearance = new CGFappearance(scene);
         this.appearance.setAmbient(0.16, 0.08, 0.035, 1);
         this.appearance.setDiffuse(0.72, 0.62, 0.48, 1);
