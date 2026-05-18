@@ -117,4 +117,15 @@ export class RockField {
             geometry.disableNormalViz();
         }
     }
+
+    isNearRock(x, z, margin = 2.0) {
+    for (const rock of this.rocks) {
+        const [rx, rz, sx, , sz] = rock;
+        const radius = Math.max(sx, sz) * this.rockScale + margin;
+        const dx = x - rx;
+        const dz = z - rz;
+        if (dx * dx + dz * dz < radius * radius) return true;
+    }
+    return false;
+}
 }

@@ -9,11 +9,14 @@ import { RockField } from "./world/RockField.js";
 import { Wagon } from "./objects/wagon/Wagon.js";
 import { Horse } from "./objects/horse/Horse.js";
 import { ObjModel } from "./primitives/ObjModel.js";
+import { GrassField } from "./world/Flora/Grass/GrassField.js";
+import { FlowerField } from "./world/Flora/Flowers/FlowerField.js"; 
 
 /**
  * MyScene
  * @constructor
  */
+
 export class MyScene extends CGFscene {
     constructor() {
         super();
@@ -39,28 +42,31 @@ export class MyScene extends CGFscene {
             followCamera: false
         });
         this.terrain = new PrairieTerrain(this, {
-            radius: this.skyDome.radius,
-            subdivisions: 40,
-            elevation: 3.2,
-            hillScale: 0.85,
-            height: 0,
-            followCamera: false
+          radius: this.skyDome.radius,
+          subdivisions: 40,
+          elevation: 3.2,
+          hillScale: 0.85,
+          height: 0,
+          followCamera: false,
+          texturePath: "textures/prairie.png",
+          textureTiling: 25,
         });
 
-        this.sun = new Sun(this,{
+        this.sun = new Sun(this, {
             radius: 82,
             sunSize: 7
         });
         this.cloudLayer = new CloudLayer(this, {
             orbitRadius: 72,
-            height: 48,
+            height: 15,
             brightness: 0.72,
             followCamera: false
         });
+
         this.dirtPatchLayer = new DirtPatchLayer(this, this.terrain);
-        this.wagonPath = new WagonPath(this, this.terrain);
-        this.rockField = new RockField(this, this.terrain);
-        this.wagon = new Wagon(this, this.terrain);
+        this.wagonPath      = new WagonPath(this, this.terrain);
+        this.rockField      = new RockField(this, this.terrain);
+        this.wagon          = new Wagon(this, this.terrain);
         this.wagon.x = 0;
         this.wagon.z = 0;
         this.horseModel = new ObjModel(this, "models/horse/horse.obj");
@@ -77,23 +83,44 @@ export class MyScene extends CGFscene {
                 lateralOffset: 0.95
             })
         ];
+
+        this.grassField = new GrassField(this, {
+            terrain:      this.terrain,
+            wagonPath:    this.wagonPath,
+            rockField:    this.rockField,
+            dirtLayer:    this.dirtPatchLayer,
+            numBlades:    12000,
+            areaRadius:   100,
+            deadRatio:    0.25,
+            windSpeed:    1.2,
+            windStrength: 0.18,
+        });
         this.initLights();
         this.setUpdatePeriod(50);
 
-        this.displayAxis = true;
-        this.displaySky = true;
-        this.displayTerrain = true;
-        this.displayNormals = false;
-        this.displaySun = true;
-        this.displayClouds = true;
+        this.displayAxis        = true;
+        this.displaySky         = true;
+        this.displayTerrain     = true;
+        this.displayNormals     = false;
+        this.displaySun         = true;
+        this.displayClouds      = true;
         this.displayDirtPatches = true;
-        this.displayWagonPath = true;
-        this.displayRocks = true;
-        this.displayWagon = true;
-        this.displayHorse = true;
-        this.sunLightEnabled = true;
-        this.scaleFactor = 2.0;
-        this.sunAngle = 0;
+        this.displayWagonPath   = true;
+        this.displayRocks       = true;
+        this.displayWagon       = true;
+        this.displayHorse       = true;
+        this.displayGrass       = true;
+        this.displayFlowers     = true; 
+        this.sunLightEnabled    = true;
+        this.scaleFactor        = 2.0;
+        this.sunAngle           = 0;
+        this.time               = 0;
+        this.startTime          = undefined;
+
+        this.lastPathWidth = this.wagonPath.width;
+
+        this.flowerField = new FlowerField(this, 350, 100,        this.terrain, this.wagonPath, 0, 0)
+
     }
 
     initLights() {
@@ -136,6 +163,10 @@ export class MyScene extends CGFscene {
     }
 
     update(t) {
+        if (this.startTime === undefined) this.startTime = t;
+        
+        this.time = (t - this.startTime) * 0.001;
+        
         this.cloudLayer.update(t);
 
         if (this.wagon) {
@@ -146,6 +177,11 @@ export class MyScene extends CGFscene {
             for (const horse of this.horses) {
                 horse.followWagon(this.wagon);
             }
+        }
+
+        if (this.wagonPath.width !== this.lastPathWidth) {
+            this.lastPathWidth = this.wagonPath.width;
+            this.grassField.rebuild();
         }
     }
 
@@ -168,44 +204,41 @@ export class MyScene extends CGFscene {
         if (this.displaySky) {
             if (this.displayNormals) this.skyDome.enableNormalViz();
             else this.skyDome.disableNormalViz();
-
             this.skyDome.display();
-
         }
 
         if (this.displayClouds) {
             if (this.displayNormals) this.cloudLayer.enableNormalViz();
             else this.cloudLayer.disableNormalViz();
-
             this.cloudLayer.display();
         }
 
         if (this.displayTerrain) {
             if (this.displayNormals) this.terrain.enableNormalViz();
             else this.terrain.disableNormalViz();
-
             this.terrain.display();
         }
 
         if (this.displayDirtPatches) {
             if (this.displayNormals) this.dirtPatchLayer.enableNormalViz();
             else this.dirtPatchLayer.disableNormalViz();
-
             this.dirtPatchLayer.display();
         }
 
         if (this.displayWagonPath) {
             if (this.displayNormals) this.wagonPath.enableNormalViz();
             else this.wagonPath.disableNormalViz();
-
             this.wagonPath.display();
         }
 
         if (this.displayRocks) {
             if (this.displayNormals) this.rockField.enableNormalViz();
             else this.rockField.disableNormalViz();
-
             this.rockField.display();
+        }
+
+        if (this.displayFlowers) {
+            this.flowerField.display();
         }
 
         if (this.displayWagon) {
@@ -221,20 +254,30 @@ export class MyScene extends CGFscene {
             }
         }
 
-        if (this.displaySun) {
-            if (this.displayNormals) 
-            {
-                this.sun.enableNormalViz();
+        if (this.displayHorse) {
+            for (const horse of this.horses) {
+                if (this.displayNormals) horse.enableNormalViz();
+                else horse.disableNormalViz();
+
+                horse.display();
             }
-            else 
-            {
+        }
+
+        if (this.displaySun) {
+            if (this.displayNormals) {
+                this.sun.enableNormalViz();
+            } else {
                 this.sun.disableNormalViz();
             }
+          this.sun.display();
+        }
 
-            this.sun.display();
+        if (this.displayGrass) {
+            if (this.displayNormals) this.grassField.enableNormalViz();
+            else this.grassField.disableNormalViz();
+            this.grassField.display(this.time);
+        }
 
-        }    
         this.popMatrix();
     }
-
 }

@@ -10,7 +10,7 @@ export class Sun {
     this.orbitRadius = options.radius ?? 80;
     this.sunSize = options.sunSize ?? 8;
     this.followCamera = options.followCamera ?? false;
-    this.height = options.height ?? 55;
+    this.height = options.height ?? 35;
     this.heightVariation = options.heightVariation ?? 12;
 
     this.geometry = new Sphere(scene, this.sectors, this.stacks, 1);

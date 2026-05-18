@@ -1,69 +1,90 @@
-import { CGFappearance } from "../../lib/CGF.js";
+import { CGFappearance, CGFtexture } from "../../lib/CGF.js";
 import { PathRibbon } from "../primitives/PathRibbon.js";
 
 export class WagonPath {
-    constructor(scene, terrain, options = {}) {
-        this.scene = scene;
-        this.terrain = terrain;
+  constructor(scene, terrain, options = {}) {
+    this.scene = scene;
+    this.terrain = terrain;
 
-        this.visible = options.visible ?? true;
-        this.width = options.width ?? 12;
-        this.heightOffset = options.heightOffset ?? 0.14;
-        this.sampleCount = options.sampleCount ?? 90;
-        this.lastTerrainRevision = -1;
-        this.lastWidth = this.width;
+    this.visible = options.visible ?? true;
+    this.width = options.width ?? 12;
+    this.heightOffset = options.heightOffset ?? 0.14;
+    this.sampleCount = options.sampleCount ?? 90;
+    this.lastTerrainRevision = -1;
+    this.lastWidth = this.width;
 
-        this.mesh = new PathRibbon(scene, {
-            width: this.width,
-            samples: this.sampleCount,
-            heightOffset: this.heightOffset,
-            pathSampler: this.getPoint.bind(this),
-            heightSampler: this.terrain.getHeightAt.bind(this.terrain)
-        });
+    this.mesh = new PathRibbon(scene, {
+      width: this.width,
+      samples: this.sampleCount,
+      heightOffset: this.heightOffset,
+      pathSampler: this.getPoint.bind(this),
+      heightSampler: this.terrain.getHeightAt.bind(this.terrain),
+    });
 
-        this.appearance = new CGFappearance(scene);
-        this.appearance.setAmbient(0.38, 0.30, 0.19, 1);
-        this.appearance.setDiffuse(0.66, 0.52, 0.32, 1);
-        this.appearance.setSpecular(0.02, 0.02, 0.02, 1);
-        this.appearance.setShininess(3);
+    this.texture = new CGFtexture(scene, "textures/dirt_patch.png");
+
+    this.appearance = new CGFappearance(scene);
+    this.appearance.setAmbient(1, 1, 1, 1);
+    this.appearance.setDiffuse(1, 1, 1, 1);
+    this.appearance.setSpecular(0.02, 0.02, 0.02, 1);
+    this.appearance.setShininess(3);
+    this.appearance.setTexture(this.texture);
+    this.appearance.setTextureWrap("REPEAT", "REPEAT");
+  }
+
+  getPoint(t) {
+    const z = -100 + 200 * t;
+    const x =
+      Math.sin(t * Math.PI * 1.1 - 0.45) * 10 +
+      Math.sin(t * Math.PI * 2.1) * 2.5;
+
+    return [x, z];
+  }
+
+  display() {
+    if (!this.visible) return;
+
+    this.rebuildIfNeeded();
+    this.appearance.apply();
+    this.mesh.display();
+  }
+
+  rebuildIfNeeded() {
+    if (
+      this.lastTerrainRevision === this.terrain.revision &&
+      this.lastWidth === this.width
+    ) {
+      return;
     }
 
-    getPoint(t) {
-        const z = -100 + 200 * t;
-        const x = Math.sin(t * Math.PI * 1.1 - 0.45) * 10 + Math.sin(t * Math.PI * 2.1) * 2.5;
+    this.mesh.updateBuffers({
+      width: this.width,
+      samples: this.sampleCount,
+      heightOffset: this.heightOffset,
+      pathSampler: this.getPoint.bind(this),
+      heightSampler: this.terrain.getHeightAt.bind(this.terrain),
+    });
+    this.lastTerrainRevision = this.terrain.revision;
+    this.lastWidth = this.width;
+  }
 
-        return [x, z];
+  enableNormalViz() {
+    this.mesh.enableNormalViz();
+  }
+
+  disableNormalViz() {
+    this.mesh.disableNormalViz();
+  }
+
+  isNearPath(x, z, minDist = 5.0) {
+    const samples = 80;
+    for (let i = 0; i <= samples; i++) {
+      const t = i / samples;
+      const [px, pz] = this.getPoint(t);
+      const dx = x - px;
+      const dz = z - pz;
+      if (dx * dx + dz * dz < minDist * minDist) return true;
     }
-
-    display() {
-        if (!this.visible) return;
-
-        this.rebuildIfNeeded();
-        this.appearance.apply();
-        this.mesh.display();
-    }
-
-    rebuildIfNeeded() {
-        if (this.lastTerrainRevision === this.terrain.revision && this.lastWidth === this.width) {
-            return;
-        }
-
-        this.mesh.updateBuffers({
-            width: this.width,
-            samples: this.sampleCount,
-            heightOffset: this.heightOffset,
-            pathSampler: this.getPoint.bind(this),
-            heightSampler: this.terrain.getHeightAt.bind(this.terrain)
-        });
-        this.lastTerrainRevision = this.terrain.revision;
-        this.lastWidth = this.width;
-    }
-
-    enableNormalViz() {
-        this.mesh.enableNormalViz();
-    }
-
-    disableNormalViz() {
-        this.mesh.disableNormalViz();
-    }
+    return false;
+  }
 }
