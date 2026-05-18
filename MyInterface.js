@@ -23,7 +23,39 @@ export class MyInterface extends CGFinterface {
         this.createCloudFolder();
         this.createSunFolder();
         this.createFloraFolder();
+
+        this.initKeys();
         return true;
+    }
+    
+    /*  
+        • Smooth keyboard control (W, A, S, D + P, L):
+        • W accelerates forward (up to horse walk speed)
+        • A steers front wheels left
+        • D steers front wheels right
+        • S reduces speed
+        • P for hale pick-up
+        • L for hale drop
+    */
+
+    initKeys() {
+        this.scene.gui=this;
+        this.processKeyboard=function(){};
+        this.activeKeys={};
+    }
+
+    processKeyDown(event) {
+        this.activeKeys[event.code]=true;
+    }
+
+    processKeyUp(event) {
+            this.activeKeys[event.code]=false;
+
+    }
+
+    isKeyPressed(keyCode) {
+            return this.activeKeys[keyCode] || false;
+
     }
 
     createSceneFolder() {

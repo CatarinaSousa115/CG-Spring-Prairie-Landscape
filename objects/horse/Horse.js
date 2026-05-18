@@ -11,7 +11,7 @@ export class Horse {
         this.y = options.y ?? 0;
         this.z = options.z ?? 0;
         this.orientation = options.orientation ?? 0;
-        this.scale = options.scale ?? 0.0018;
+        this.scale = options.scale ?? 0.0021;
         this.hitchDistance = options.hitchDistance ?? 8.9;
         this.lateralOffset = options.lateralOffset ?? 0;
         this.groundOffset = options.groundOffset ?? 0.02;
@@ -29,14 +29,22 @@ export class Horse {
     }
 
     followWagon(wagon) {
-        const directionX = Math.sin(wagon.orientation);
-        const directionZ = Math.cos(wagon.orientation);
-        const sideX = Math.cos(wagon.orientation);
-        const sideZ = -Math.sin(wagon.orientation);
+        const wagonDirectionX = Math.sin(wagon.orientation);
+        const wagonDirectionZ = Math.cos(wagon.orientation);
+        const frontAxleZ = wagon.frontAxleZ ?? 0;
+        const hitchDistanceFromFrontAxle = this.hitchDistance - frontAxleZ;
+        const hitchOrientation = wagon.orientation + (wagon.steeringAngle ?? 0);
 
-        this.x = wagon.x + directionX * this.hitchDistance + sideX * this.lateralOffset;
-        this.z = wagon.z + directionZ * this.hitchDistance + sideZ * this.lateralOffset;
-        this.orientation = wagon.orientation;
+        const hitchAnchorX = wagon.x + wagonDirectionX * frontAxleZ;
+        const hitchAnchorZ = wagon.z + wagonDirectionZ * frontAxleZ;
+        const directionX = Math.sin(hitchOrientation);
+        const directionZ = Math.cos(hitchOrientation);
+        const sideX = Math.cos(hitchOrientation);
+        const sideZ = -Math.sin(hitchOrientation);
+
+        this.x = hitchAnchorX + directionX * hitchDistanceFromFrontAxle + sideX * this.lateralOffset;
+        this.z = hitchAnchorZ + directionZ * hitchDistanceFromFrontAxle + sideZ * this.lateralOffset;
+        this.orientation = hitchOrientation;
 
         if (this.terrain?.getHeightAt) {
             this.y = this.terrain.getHeightAt(this.x, this.z);
