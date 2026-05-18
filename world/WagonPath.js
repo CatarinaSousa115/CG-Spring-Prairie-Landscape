@@ -39,7 +39,7 @@ export class WagonPath {
       heightSampler: this.terrain.getHeightAt.bind(this.terrain),
     });
   }
-  
+
   getPoint(t) {
     const z = -100 + 200 * t;
     const x =

@@ -12,7 +12,7 @@ export class PrairieTerrain {
     this.height = options.height ?? 0;
     this.elevation = 6;
     this.heightMapResolution = options.heightMapResolution ?? 96;
-    this.hillScale = options.hillScale ?? 1 ;
+    this.hillScale = options.hillScale ?? 1;
     this.texturePath = options.texturePath ?? "textures/prairie.png";
     this.textureTiling = options.textureTiling ?? 25;
 

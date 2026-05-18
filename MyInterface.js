@@ -175,6 +175,7 @@ export class MyInterface extends CGFinterface {
         const gameplayFolder = this.gui.addFolder('Gameplay');
         gameplayFolder.add(this.scene, 'displayWagon').name('Show wagon');
         gameplayFolder.add(this.scene, 'displayHorse').name('Show horses');
+        gameplayFolder.add(this.scene, 'displayBarn').name('Show barn');
         gameplayFolder.close();
     }
 
