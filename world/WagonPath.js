@@ -21,7 +21,7 @@ export class WagonPath {
       heightSampler: this.terrain.getHeightAt.bind(this.terrain),
     });
 
-    this.texture = new CGFtexture(scene, "textures/dirt_patch.png");
+    this.texture = new CGFtexture(scene, "textures/dirt_path.png");
 
     this.appearance = new CGFappearance(scene);
     this.appearance.setAmbient(1, 1, 1, 1);
