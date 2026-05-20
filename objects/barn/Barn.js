@@ -33,7 +33,7 @@ export class Barn extends CGFobject {
 
     if (this.doorMat) {
       this.scene.pushMatrix();
-      this.scene.translate(0, 0.8, 3.01);
+      this.scene.translate(0, 1.5, 3.01);
       this.scene.scale(1.5, 1.6, 1);
       this.doorMat.apply();
       this.quad.display();

@@ -1,4 +1,4 @@
-import { CGFscene, CGFcamera, CGFaxis, CGFtexture, CGFappearance } from "../lib/CGF.js";
+import { CGFscene, CGFcamera, CGFaxis, CGFtexture, CGFappearance} from "../lib/CGF.js";
 import { SkyDome } from "./world/SkyDome.js";
 import { PrairieTerrain } from "./world/PrairieTerrain.js";
 import { Sun } from "./world/Sun.js";
@@ -12,12 +12,8 @@ import { ObjModel } from "./primitives/ObjModel.js";
 import { GrassField } from "./world/Flora/Grass/GrassField.js";
 import { FlowerField } from "./world/Flora/Flowers/FlowerField.js";
 import { Barn } from "./objects/barn/Barn.js";
-import { Circle } from "./primitives/Circle.js";
+import { Cylinder } from "./primitives/Cylinder.js";
 
-/**
- * MyScene
- * @constructor
- */
 export class MyScene extends CGFscene {
   constructor() {
     super();
@@ -101,34 +97,34 @@ export class MyScene extends CGFscene {
       windStrength: 0.18,
     });
 
-    // --- Dynamic Path-Relative Placement Architecture ---
-    const tBarn = 0.68; 
+    const tBarn = 0.68;
     const p0 = this.wagonPath.getPoint(tBarn);
     const p1 = this.wagonPath.getPoint(tBarn + 0.01);
 
     const tangentX = p1[0] - p0[0];
     const tangentZ = p1[1] - p0[1];
-    const pathSegmentLength = Math.sqrt(tangentX * tangentX + tangentZ * tangentZ);
+    const pathSegmentLength = Math.sqrt(
+      tangentX * tangentX + tangentZ * tangentZ,
+    );
 
     const normalX = -tangentZ / pathSegmentLength;
     const normalZ = tangentX / pathSegmentLength;
 
-    // Position Barn safely outside path width boundaries and snap to ground elevation
-    const barnSideOffset = 9.5; 
+    const barnSideOffset = 9.5;
     this.barnX = p0[0] + normalX * barnSideOffset;
     this.barnZ = p0[1] + normalZ * barnSideOffset;
-    this.barnY = this.terrain.getHeightAt(this.barnX, this.barnZ); // Fixed: dynamic ground clamp
+    this.barnY = this.terrain.getHeightAt(this.barnX, this.barnZ);
 
-    // Orient the barn around the Y axis to face straight back towards the trail
     this.barnRotation = Math.atan2(-normalX, -normalZ);
 
-    // Position interactive Bale zone and calculate its height relative to hills
     const baleSideOffset = 4.5;
     this.baleAreaX = p0[0] + normalX * baleSideOffset;
     this.baleAreaZ = p0[1] + normalZ * baleSideOffset;
-    this.baleAreaY = this.terrain.getHeightAt(this.baleAreaX, this.baleAreaZ) + 0.02; // Fixed: ground clamp + layout bias
-    
-    this.baleAreaRadius = 3.5;
+    this.baleAreaY =
+      this.terrain.getHeightAt(this.baleAreaX, this.baleAreaZ) + 0.02;
+
+    this.baleAreaRadius = 20;
+    this.baleAreaHeight = 4;
     this.wagonRadius = 1.8;
     this.wagonIntersecting = false;
 
@@ -136,8 +132,6 @@ export class MyScene extends CGFscene {
     this.barnRoofTexture = new CGFtexture(this, "textures/barn_roof.png");
     this.barnDoorTexture = new CGFtexture(this, "textures/barn_door.png");
     this.barnWindowTexture = new CGFtexture(this, "textures/barn_window.png");
-    this.baleNormalTex = new CGFtexture(this, "textures/dirt_patch_2.png");
-    this.baleActiveTex = new CGFtexture(this, "textures/meadow.png");
 
     this.barnWallMaterial = new CGFappearance(this);
     this.barnWallMaterial.setAmbient(0.3, 0.3, 0.3, 1.0);
@@ -164,14 +158,16 @@ export class MyScene extends CGFscene {
     this.barnWindowMaterial.setTexture(this.barnWindowTexture);
 
     this.baleNormalMat = new CGFappearance(this);
-    this.baleNormalMat.setAmbient(0.3, 0.3, 0.3, 1.0);
-    this.baleNormalMat.setDiffuse(0.6, 0.6, 0.6, 1.0);
-    this.baleNormalMat.setTexture(this.baleNormalTex);
+    this.baleNormalMat.setAmbient(1, 1, 1, 0.1);      
+    this.baleNormalMat.setDiffuse(0.8, 0.7, 0.0, 0.1);  
+    this.baleNormalMat.setSpecular(0.1, 0.1, 0.0, 0.1); 
+    this.baleNormalMat.setShininess(1);
 
     this.baleActiveMat = new CGFappearance(this);
-    this.baleActiveMat.setAmbient(0.3, 0.8, 0.4, 1.0); 
-    this.baleActiveMat.setDiffuse(0.4, 0.9, 0.5, 1.0);
-    this.baleActiveMat.setTexture(this.baleActiveTex);
+    this.baleActiveMat.setAmbient(0.0, 0.9, 0.1, 0.15);  
+    this.baleActiveMat.setDiffuse(0.0, 0.9, 0.1, 0.15);  
+    this.baleActiveMat.setSpecular(0.0, 0.1, 0.0, 0.15); 
+    this.baleActiveMat.setShininess(5);
 
     this.barn = new Barn(
       this,
@@ -180,7 +176,8 @@ export class MyScene extends CGFscene {
       this.barnDoorMaterial,
       this.barnWindowMaterial,
     );
-    this.baleArea = new Circle(this, 40);
+
+    this.baleArea = new Cylinder(this, 40, 1);
 
     this.initLights();
     this.setUpdatePeriod(50);
@@ -346,8 +343,9 @@ export class MyScene extends CGFscene {
 
     if (this.displayBaleArea) {
       this.pushMatrix();
-      this.translate(this.baleAreaX, this.baleAreaY, this.baleAreaZ); // Fixed: maps precisely over hill contours
-      this.scale(this.baleAreaRadius, 1, this.baleAreaRadius);
+      this.translate(this.barnX, this.barnY - 2, this.barnZ);
+      this.rotate(-Math.PI / 2, 1, 0, 0);
+      this.scale(this.baleAreaRadius, this.baleAreaRadius, this.baleAreaHeight);
       if (this.wagonIntersecting) {
         this.baleActiveMat.apply();
       } else {
@@ -359,8 +357,9 @@ export class MyScene extends CGFscene {
 
     if (this.displayBarn) {
       this.pushMatrix();
-      this.translate(this.barnX, this.barnY, this.barnZ); // Fixed: barn base stays aligned with terrain surface
-      this.rotate(this.barnRotation, 0, 1, 0); 
+      this.translate(this.barnX - 5, this.barnY - 2, this.barnZ);
+      this.scale(2.5, 2.5, 2.5);
+      this.rotate(this.barnRotation, 0, 1, 0);
       this.barn.display();
       this.popMatrix();
     }

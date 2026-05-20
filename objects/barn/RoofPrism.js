@@ -8,7 +8,6 @@ export class RoofPrism extends CGFobject {
 
   initBuffers() {
     this.vertices = [
-      // Front Triangle 
       -0.5,
       0,
       0.5, 
@@ -19,7 +18,6 @@ export class RoofPrism extends CGFobject {
       0.5,
       0.5, 
 
-      // Back Triangle 
       -0.5,
       0,
       -0.5,
@@ -30,7 +28,6 @@ export class RoofPrism extends CGFobject {
       0.5,
       -0.5,
 
-      // Left Slope Panel
       -0.5,
       0,
       0.5, 
@@ -44,7 +41,6 @@ export class RoofPrism extends CGFobject {
       0,
       -0.5, 
 
-      // Right Slope Panel
       0,
       0.5,
       0.5, 
@@ -62,22 +58,22 @@ export class RoofPrism extends CGFobject {
     this.indices = [
       0,
       1,
-      2, // Front Gable
+      2, 
       5,
       4,
-      3, // Back Gable
+      3, 
       6,
       7,
       8,
       6,
       8,
-      9, // Left Slope
+      9, 
       10,
       11,
       12,
       10,
       12,
-      13, // Right Slope
+      13, 
     ];
 
     const sin45 = Math.sin(Math.PI / 4);
@@ -90,7 +86,7 @@ export class RoofPrism extends CGFobject {
       1,
       0,
       0,
-      1, // Front
+      1, 
       0,
       0,
       -1,
@@ -99,7 +95,7 @@ export class RoofPrism extends CGFobject {
       -1,
       0,
       0,
-      -1, // Back
+      -1, 
       -sin45,
       sin45,
       0,
@@ -111,7 +107,7 @@ export class RoofPrism extends CGFobject {
       0,
       -sin45,
       sin45,
-      0, // Left
+      0, 
       sin45,
       sin45,
       0,
@@ -123,7 +119,7 @@ export class RoofPrism extends CGFobject {
       0,
       sin45,
       sin45,
-      0, // Right
+      0, 
     ];
 
     this.texCoords = [
@@ -132,13 +128,13 @@ export class RoofPrism extends CGFobject {
       1,
       0,
       0.5,
-      1, // Front Gable
+      1,
       1,
       0,
       0,
       0,
       0.5,
-      1, // Back Gable
+      1,
       0,
       0,
       1,
@@ -146,7 +142,7 @@ export class RoofPrism extends CGFobject {
       1,
       1,
       0,
-      1, // Left Slope
+      1,
       0,
       0,
       1,
@@ -154,7 +150,7 @@ export class RoofPrism extends CGFobject {
       1,
       1,
       0,
-      1, // Right Slope
+      1,
     ];
 
     this.primitiveType = this.scene.gl.TRIANGLES;
