@@ -14,8 +14,8 @@ export class DirtPatchLayer {
 
     this.patches = this.createPatches();
 
-    this.texture_dry = new CGFtexture(scene, "textures/test.png");
-    this.texture_meadow = new CGFtexture(scene, "textures/test_2.png");
+    this.texture_dry = new CGFtexture(scene, "textures/dead_grass.jpg");
+    this.texture_meadow = new CGFtexture(scene, "textures/grass.jpg");
 
     this.dryAppearance = new CGFappearance(scene);
     this.dryAppearance.setAmbient(1, 1, 1, 1);
@@ -67,8 +67,8 @@ export class DirtPatchLayer {
         blobs.push({
           ox: (Math.random() - 0.5) * 1.2,
           oz: (Math.random() - 0.5) * 1.2,
-          scaleX: sx * (0.7 + Math.random() * 0.4),
-          scaleZ: sz * (0.7 + Math.random() * 0.4),
+          scaleX: sx * (0.8 + Math.random() * 0.2),
+          scaleZ: sz * (0.8 + Math.random() * 0.2),
           rotOffset: Math.random() * 0.5,
         });
       }
@@ -78,7 +78,7 @@ export class DirtPatchLayer {
   }
 
   getTerrainNormal(x, z) {
-    const eps = 0.15; // Sample distance margin
+    const eps = 0.15;
     const hL = this.terrain.getHeightAt(x - eps, z);
     const hR = this.terrain.getHeightAt(x + eps, z);
     const hD = this.terrain.getHeightAt(x, z - eps);
@@ -95,9 +95,19 @@ export class DirtPatchLayer {
   display() {
     if (!this.visible) return;
 
+    this.scene.gl.enable(this.scene.gl.BLEND);
+    this.scene.gl.blendFunc(
+      this.scene.gl.SRC_ALPHA,
+      this.scene.gl.ONE_MINUS_SRC_ALPHA,
+    );
+    this.scene.gl.depthMask(false);
+
     for (const patch of this.patches) {
       this.displayPatch(patch);
     }
+
+    this.scene.gl.depthMask(true);
+    this.scene.gl.disable(this.scene.gl.BLEND);
   }
 
   displayPatch(patch) {
@@ -115,7 +125,9 @@ export class DirtPatchLayer {
       const finalX = patch.x + blob.ox;
       const finalZ = patch.z + blob.oz;
 
-      const y = this.terrain.getHeightAt(finalX, finalZ) + this.heightOffset;
+      const maxScale = Math.max(blob.scaleX, blob.scaleZ);
+      const dynamicOffset = this.heightOffset + maxScale * 0.01;
+      const y = this.terrain.getHeightAt(finalX, finalZ) + dynamicOffset;
       const [nx, ny, nz] = this.getTerrainNormal(finalX, finalZ);
 
       this.scene.pushMatrix();
@@ -124,7 +136,7 @@ export class DirtPatchLayer {
       const axisX = nz;
       const axisY = 0;
       const axisZ = -nx;
-      const angle = Math.acos(ny); 
+      const angle = Math.acos(ny);
 
       if (Math.abs(angle) > 0.001) {
         this.scene.rotate(angle, axisX, axisY, axisZ);
