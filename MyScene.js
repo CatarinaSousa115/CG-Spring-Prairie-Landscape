@@ -13,6 +13,7 @@ import { GrassField } from "./world/Flora/Grass/GrassField.js";
 import { FlowerField } from "./world/Flora/Flowers/FlowerField.js";
 import { Barn } from "./objects/barn/Barn.js";
 import { Cylinder } from "./primitives/Cylinder.js";
+import { HayBale } from "./objects/bale/HayBale.js";
 
 export class MyScene extends CGFscene {
   constructor() {
@@ -132,6 +133,7 @@ export class MyScene extends CGFscene {
     this.barnRoofTexture = new CGFtexture(this, "textures/barn_roof.png");
     this.barnDoorTexture = new CGFtexture(this, "textures/barn_door.png");
     this.barnWindowTexture = new CGFtexture(this, "textures/barn_window.png");
+    this.hayBaleTexture = new CGFtexture(this, "textures/hay_bale.png");
 
     this.barnWallMaterial = new CGFappearance(this);
     this.barnWallMaterial.setAmbient(0.3, 0.3, 0.3, 1.0);
@@ -197,6 +199,7 @@ export class MyScene extends CGFscene {
     this.displayFlowers = true;
     this.displayBarn = true;
     this.displayBaleArea = true;
+    this.displayHayBales = true;
 
     this.sunLightEnabled = true;
     this.scaleFactor = 2.0;
@@ -214,6 +217,37 @@ export class MyScene extends CGFscene {
       0,
       0,
     );
+
+    this.hayBales = [];
+    this.spawnHayBales(15);
+  }
+
+  spawnHayBales(num) {
+    const radius = 80;
+    const pathMargin = this.wagonPath.width / 2 + 3;
+    const rockMargin = 4;
+    let attempts = 0;
+    const maxAttempts = num * 50;
+
+    while (this.hayBales.length < num && attempts < maxAttempts) {
+      attempts++;
+      const angle = Math.random() * Math.PI * 2;
+      const dist = Math.sqrt(Math.random()) * radius;
+      const x = dist * Math.cos(angle);
+      const z = dist * Math.sin(angle);
+
+      if (this.wagonPath.isNearPath(x, z, pathMargin)) continue;
+
+      if (this.rockField.isNearRock(x, z, rockMargin)) continue;
+
+      const dx = x - this.barnX;
+      const dz = z - this.barnZ;
+      if (Math.sqrt(dx * dx + dz * dz) < this.baleAreaRadius) continue;
+
+      const bale = new HayBale(this, this.terrain, this.hayBaleTexture);
+      bale.setPosition(x, z);
+      this.hayBales.push(bale);
+    }
   }
 
   initLights() {
@@ -265,8 +299,8 @@ export class MyScene extends CGFscene {
     if (this.wagon) {
       this.wagon.update(t);
 
-      const dx = this.wagon.x - this.baleAreaX;
-      const dz = this.wagon.z - this.baleAreaZ;
+      const dx = this.wagon.x - this.barnX;
+      const dz = this.wagon.z - this.barnZ;
       const distance = Math.sqrt(dx * dx + dz * dz);
 
       this.wagonIntersecting =
@@ -386,6 +420,12 @@ export class MyScene extends CGFscene {
       if (this.displayNormals) this.grassField.enableNormalViz();
       else this.grassField.disableNormalViz();
       this.grassField.display(this.time);
+    }
+
+    if (this.displayHayBales) {
+      for (const bale of this.hayBales) {
+        bale.display();
+      }
     }
 
     this.popMatrix();
