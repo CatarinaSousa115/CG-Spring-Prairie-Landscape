@@ -305,6 +305,8 @@ export class MyScene extends CGFscene {
 
       this.wagonIntersecting =
         distance < this.baleAreaRadius + this.wagonRadius;
+
+      this.checkKeys();
     }
 
     if (this.horses && this.wagon) {
@@ -316,6 +318,62 @@ export class MyScene extends CGFscene {
     if (this.wagonPath.width !== this.lastPathWidth) {
       this.lastPathWidth = this.wagonPath.width;
       this.grassField.rebuild();
+    }
+  }
+
+  checkKeys() {
+    const pPressed = this.gui.isKeyPressed("KeyP");
+    if (pPressed && !this.lastPPressed) {
+      this.pickUpBale();
+    }
+    this.lastPPressed = pPressed;
+
+    const lPressed = this.gui.isKeyPressed("KeyL");
+    if (lPressed && !this.lastLPressed) {
+      this.dropBale();
+    }
+    this.lastLPressed = lPressed;
+  }
+
+  pickUpBale() {
+    if (this.wagon.carriedBales.length >= this.wagon.maxBales) return;
+
+    let nearestBale = null;
+    let minDistance = 10.0;
+
+    for (const bale of this.hayBales) {
+      if (bale.isPickedUp) continue;
+
+      const dx = bale.x - this.wagon.x;
+      const dz = bale.z - this.wagon.z;
+      const dist = Math.sqrt(dx * dx + dz * dz);
+
+      if (dist < minDistance) {
+        minDistance = dist;
+        nearestBale = bale;
+      }
+    }
+
+    if (nearestBale) {
+      nearestBale.isPickedUp = true;
+      this.wagon.carriedBales.push(nearestBale);
+    }
+  }
+
+  dropBale() {
+    if (this.wagon.carriedBales.length === 0) return;
+
+    if (this.wagonIntersecting) {
+      const bale = this.wagon.carriedBales.pop();
+      bale.isPickedUp = false;
+
+      // Drop with some randomness within the area
+      const angle = Math.random() * Math.PI * 2;
+      const dist = Math.random() * (this.baleAreaRadius * 0.7);
+      const dropX = this.barnX + Math.cos(angle) * dist;
+      const dropZ = this.barnZ + Math.sin(angle) * dist;
+
+      bale.setPosition(dropX, dropZ);
     }
   }
 

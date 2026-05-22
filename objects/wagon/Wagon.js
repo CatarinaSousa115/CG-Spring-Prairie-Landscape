@@ -58,6 +58,9 @@ export class Wagon extends CGFobject {
         this.frontAxle = components.frontAxle ?? new Box(scene);
         this.rearAxle = components.rearAxle ?? new Box(scene);
         this.tongue = components.tongue ?? new WagonTongue(scene, this.config.tongue);
+
+        this.carriedBales = [];
+        this.maxBales = 2;
     }
 
     update(t) {
@@ -117,10 +120,26 @@ export class Wagon extends CGFobject {
         if (this.parts.bed) this.displayBed();
         if (this.parts.cover) this.displayCover();
 
+        this.displayCarriedBales();
+
         this.displayRearAssembly();
         this.displayFrontAssembly();
 
         this.scene.popMatrix();
+    }
+
+    displayCarriedBales() {
+        const spacingX = 1.8;
+
+        for (let i = 0; i < this.carriedBales.length; i++) {
+            
+            const offsetX = (i - 0.5) * spacingX;
+
+            this.scene.pushMatrix();
+            this.scene.translate(offsetX, this.groundClearance + this.bodyHeight + 0.5, 0);
+            this.carriedBales[i].displayOnWagon();
+            this.scene.popMatrix();
+        }
     }
 
     displayBed() {

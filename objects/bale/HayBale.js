@@ -55,4 +55,13 @@ export class HayBale extends CGFobject {
 
     this.scene.popMatrix();
   }
+
+  displayOnWagon() {
+    this.scene.pushMatrix();
+    this.scene.rotate(this.rotation, 0, 1, 0);
+    this.scene.scale(2.0, 1.0, 1.0);
+    this.material.apply();
+    this.box.display();
+    this.scene.popMatrix();
+  }
 }
