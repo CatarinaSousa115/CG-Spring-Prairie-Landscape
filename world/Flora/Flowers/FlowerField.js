@@ -1,4 +1,6 @@
-import { Flower } from "./Flower.js";
+import { CGFappearance } from "../../../../lib/CGF.js";
+import { Sphere } from "../../../primitives/Sphere.js";
+import { Cylinder } from "../../../primitives/Cylinder.js";
 
 const SPECIES = [
   { color: [0.85, 0.08, 0.08], petalCount: [4, 4], stemH: [0.5, 1.1] },
@@ -51,17 +53,41 @@ export class FlowerField {
     this.originX = originX;
     this.originZ = originZ;
 
+    this.sphere = new Sphere(scene, 10, 6, 1);
+    this.cylinder = new Cylinder(scene, 8, 1);
+
+    this._initSharedMaterials();
     this.flowers = [];
     this.rebuild();
   }
 
+  _initSharedMaterials() {
+    this.stemAppearance = new CGFappearance(this.scene);
+    this.stemAppearance.setAmbient(0.05, 0.22, 0.05, 1);
+    this.stemAppearance.setDiffuse(0.12, 0.48, 0.12, 1);
+    this.stemAppearance.setSpecular(0.02, 0.08, 0.02, 1);
+    this.stemAppearance.setShininess(5);
+
+    this.centerAppearance = new CGFappearance(this.scene);
+    this.centerAppearance.setAmbient(0.7, 0.5, 0.02, 1);
+    this.centerAppearance.setDiffuse(0.92, 0.72, 0.05, 1);
+    this.centerAppearance.setSpecular(0.3, 0.25, 0.05, 1);
+    this.centerAppearance.setShininess(40);
+
+    this.petalAppearance = new CGFappearance(this.scene);
+    this.petalAppearance.setSpecular(0.08, 0.08, 0.08, 1);
+    this.petalAppearance.setShininess(8);
+
+    this.petalTipAppearance = new CGFappearance(this.scene);
+    this.petalTipAppearance.setSpecular(0.08, 0.08, 0.08, 1);
+    this.petalTipAppearance.setShininess(8);
+  }
+
   rebuild() {
     this.flowers = [];
-
     const pathMargin = this.wagonPath ? this.wagonPath.width / 2 + 1.5 : 0;
     const maxAttempts = this.numFlowers * 20;
 
-    // 1. clusters por espécie
     const clusterCount = Math.max(4, Math.floor(this.numFlowers / 12));
     const clusters = [];
     for (let i = 0; i < clusterCount; i++) {
@@ -89,7 +115,6 @@ export class FlowerField {
       }
     }
 
-    // 2. flores esparsas com noise
     let attempts = 0;
     while (this.flowers.length < this.numFlowers && attempts < maxAttempts) {
       attempts++;
@@ -118,32 +143,114 @@ export class FlowerField {
     const color = sp.color.map((c) =>
       Math.max(0, Math.min(1, c + rf(-0.1, 0.1))),
     );
+    const petalCount = ri(...sp.petalCount);
+
+    const petalData = Array.from({ length: petalCount }, (_, i) => ({
+      sizeMult: 0.85 + Math.random() * 0.3,
+      jitter: (Math.random() - 0.5) * 0.08,
+      droopAngle: 0.18 + Math.random() * 0.12,
+      colorAlt: i % 2 === 0,
+    }));
 
     this.flowers.push({
       x,
       z,
+      y: this.terrain ? this.terrain.getHeightAt(worldX, worldZ) : 0,
       scale: rf(0.45, 0.85),
       rotation: Math.random() * Math.PI * 2,
-      flower: new Flower(this.scene, {
-        stemHeight: rf(...sp.stemH),
-        petalCount: ri(...sp.petalCount),
-        color,
-      }),
+      tiltAngle: (Math.random() - 0.5) * 0.18,
+      baseAngle: Math.random() * Math.PI * 2,
+      stemHeight: rf(...sp.stemH),
+      petalCount,
+      color,
+      petalData,
     });
   }
 
   display(patchX = 0, patchZ = 0) {
+    this.stemAppearance.apply();
     for (const e of this.flowers) {
-      const worldX = patchX + e.x;
-      const worldZ = patchZ + e.z;
-      const y = this.terrain ? this.terrain.getHeightAt(worldX, worldZ) : 0;
-
       this.scene.pushMatrix();
-      this.scene.translate(e.x, y, e.z);
+      this.scene.translate(e.x, e.y, e.z);
       this.scene.rotate(e.rotation, 0, 1, 0);
       this.scene.scale(e.scale, e.scale, e.scale);
-      e.flower.display();
+      this.scene.rotate(e.tiltAngle, 0, 0, 1);
+
+      this.scene.pushMatrix();
+      this.scene.rotate(-Math.PI / 2, 1, 0, 0);
+      this.scene.scale(0.04, 0.04, e.stemHeight);
+      this.cylinder.display();
+      this.scene.popMatrix();
+
       this.scene.popMatrix();
     }
+
+    this.centerAppearance.apply();
+    for (const e of this.flowers) {
+      this.scene.pushMatrix();
+      this.scene.translate(e.x, e.y, e.z);
+      this.scene.rotate(e.rotation, 0, 1, 0);
+      this.scene.scale(e.scale, e.scale, e.scale);
+      this.scene.rotate(e.tiltAngle, 0, 0, 1);
+
+      this.scene.pushMatrix();
+      this.scene.translate(0, e.stemHeight, 0);
+      this.scene.scale(0.16, 0.1, 0.16);
+      this.sphere.display();
+      this.scene.popMatrix();
+
+      this.scene.popMatrix();
+    }
+
+    const lighten = (c) => Math.min(1, c + 0.18);
+    for (const e of this.flowers) {
+      this.scene.pushMatrix();
+      this.scene.translate(e.x, e.y, e.z);
+      this.scene.rotate(e.rotation, 0, 1, 0);
+      this.scene.scale(e.scale, e.scale, e.scale);
+      this.scene.rotate(e.tiltAngle, 0, 0, 1);
+
+      const [r, g, b] = e.color;
+      const lr = lighten(r),
+        lg = lighten(g),
+        lb = lighten(b);
+
+      for (let i = 0; i < e.petalCount; i++) {
+        const pd = e.petalData[i];
+        const angle =
+          e.baseAngle + (i / e.petalCount) * Math.PI * 2 + pd.jitter;
+
+        if (pd.colorAlt) {
+          this.petalAppearance.setAmbient(r * 0.7, g * 0.7, b * 0.7, 1);
+          this.petalAppearance.setDiffuse(r, g, b, 1);
+          this.petalAppearance.apply();
+        } else {
+          this.petalTipAppearance.setAmbient(lr * 0.7, lg * 0.7, lb * 0.7, 1);
+          this.petalTipAppearance.setDiffuse(lr, lg, lb, 1);
+          this.petalTipAppearance.apply();
+        }
+
+        this.scene.pushMatrix();
+        this.scene.translate(0, e.stemHeight, 0);
+        this.scene.rotate(angle, 0, 1, 0);
+        this.scene.rotate(pd.droopAngle, 0, 0, 1);
+        this.scene.translate(0.22 * pd.sizeMult, 0, 0);
+        this.scene.scale(0.28 * pd.sizeMult, 0.04, 0.12 * pd.sizeMult);
+        this.sphere.display();
+        this.scene.popMatrix();
+      }
+
+      this.scene.popMatrix();
+    }
+  }
+
+  enableNormalViz() {
+    this.sphere.enableNormalViz();
+    this.cylinder.enableNormalViz();
+  }
+
+  disableNormalViz() {
+    this.sphere.disableNormalViz();
+    this.cylinder.disableNormalViz();
   }
 }
