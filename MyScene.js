@@ -367,13 +367,22 @@ export class MyScene extends CGFscene {
       const bale = this.wagon.carriedBales.pop();
       bale.isPickedUp = false;
 
-      // Drop with some randomness within the area
-      const angle = Math.random() * Math.PI * 2;
-      const dist = Math.random() * (this.baleAreaRadius * 0.7);
-      const dropX = this.barnX + Math.cos(angle) * dist;
-      const dropZ = this.barnZ + Math.sin(angle) * dist;
+      const angle = this.wagon.orientation;
+      const rightX = Math.cos(angle);
+      const rightZ = -Math.sin(angle);
+
+      const toBarnX = this.barnX - this.wagon.x;
+      const toBarnZ = this.barnZ - this.wagon.z;
+
+      const dot = toBarnX * rightX + toBarnZ * rightZ;
+      const sideSign = dot > 0 ? 1 : -1;
+
+      const offset = 3.0 * sideSign;
+      const dropX = this.wagon.x + rightX * offset;
+      const dropZ = this.wagon.z + rightZ * offset;
 
       bale.setPosition(dropX, dropZ);
+      bale.rotation = angle; 
     }
   }
 

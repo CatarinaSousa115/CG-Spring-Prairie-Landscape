@@ -129,14 +129,14 @@ export class Wagon extends CGFobject {
     }
 
     displayCarriedBales() {
-        const spacingX = 1.8;
+        const spacingX = 1.2;
 
         for (let i = 0; i < this.carriedBales.length; i++) {
             
             const offsetX = (i - 0.5) * spacingX;
 
             this.scene.pushMatrix();
-            this.scene.translate(offsetX, this.groundClearance + this.bodyHeight + 0.5, 0);
+            this.scene.translate(offsetX, this.groundClearance + this.bodyHeight - 0.5, 0);
             this.carriedBales[i].displayOnWagon();
             this.scene.popMatrix();
         }
