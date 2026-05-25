@@ -4,9 +4,11 @@ export const DEFAULT_WAGON_CONFIG = {
         acceleration: 0.012,
         brake: 0.025,
         friction: 0.004,
-        maxSteeringAngle: Math.PI / 6,
-        steeringSpeed: 0.035,
-        steeringReturn: 0.82
+        maxSteeringAngle: Math.PI / 4.5,
+        steeringSpeed: 0.052,
+        steeringReturn: 0.88,
+        turningResponsiveness: 0.22,
+        minTurningSpeed: 0.07
     },
 
     dimensions: {
@@ -41,6 +43,14 @@ export const DEFAULT_WAGON_CONFIG = {
         boardGap: 0.075,
         seamThickness: 0.035,
         cornerPostWidth: 0.105
+    },
+
+    seat: {
+        widthRatio: 0.78,
+        depth: 0.68,
+        thickness: 0.18,
+        frontOffset: 0.06,
+        yOffset: 0.02
     },
 
     tongue: {
@@ -124,6 +134,7 @@ export const DEFAULT_WAGON_CONFIG = {
     // Alterar aqui quando as outras partes forem implementadas.
     visibleParts: {
         bed: true,
+        seat: true,
         cover: true,
         axles: true,
         tongue: true,
@@ -138,6 +149,7 @@ export function mergeWagonConfig(config = {}) {
         layout: { ...DEFAULT_WAGON_CONFIG.layout, ...config.layout },
         wheel: { ...DEFAULT_WAGON_CONFIG.wheel, ...config.wheel },
         bed: { ...DEFAULT_WAGON_CONFIG.bed, ...config.bed },
+        seat: { ...DEFAULT_WAGON_CONFIG.seat, ...config.seat },
         tongue: { ...DEFAULT_WAGON_CONFIG.tongue, ...config.tongue },
         cover: { ...DEFAULT_WAGON_CONFIG.cover, ...config.cover },
         materials: {

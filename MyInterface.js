@@ -178,6 +178,16 @@ export class MyInterface extends CGFinterface {
         gameplayFolder.add(this.scene, 'displayHorse').name('Show horses');
         gameplayFolder.add(this.scene, 'displayBarn').name('Show barn');
         gameplayFolder.add(this.scene, 'displayHayBales').name('Show hay bales');
+        gameplayFolder.add(this.scene, 'cameraFollowHorse').name('Camera follows horses');
+        gameplayFolder
+            .add(this.scene, 'cameraFollowDistance', 6, 24, 0.5)
+            .name('Camera distance');
+        gameplayFolder
+            .add(this.scene, 'cameraFollowHeight', 2, 14, 0.5)
+            .name('Camera height');
+        gameplayFolder
+            .add(this.scene, 'cameraFollowLookAhead', 0, 10, 0.5)
+            .name('Camera look ahead');
         gameplayFolder.close();
     }
 
