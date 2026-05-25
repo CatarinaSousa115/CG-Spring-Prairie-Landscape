@@ -379,6 +379,14 @@ export class MyScene extends CGFscene {
     return `${delivered}/${this.hayBales.length}`;
   }
 
+  get gameTime() {
+    const mins = Math.floor(this.time / 60);
+    const secs = Math.floor(this.time % 60);
+    return `${mins.toString().padStart(2, "0")}:${secs
+      .toString()
+      .padStart(2, "0")}`;
+  }
+
   dropBale() {
     if (this.wagon.carriedBales.length === 0) return;
 
