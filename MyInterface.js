@@ -15,6 +15,7 @@ export class MyInterface extends CGFinterface {
         this.gui = new dat.GUI();
         this.gui.width = 320;
 
+        this.createHPFolder();
         this.createSceneFolder();
         this.createSkyFolder();
         this.createWorldFolder();
@@ -178,6 +179,14 @@ export class MyInterface extends CGFinterface {
         gameplayFolder.add(this.scene, 'displayBarn').name('Show barn');
         gameplayFolder.add(this.scene, 'displayHayBales').name('Show hay bales');
         gameplayFolder.close();
+    }
+
+    createHPFolder() { 
+        const hpFolder = this.gui.addFolder("HP");
+        hpFolder.add(this.scene.wagon, 'hp', 0, 100).name('Health').listen();
+        hpFolder.add(this.scene.wagon, 'isDead').name('Game Over').listen();
+
+        hpFolder.open();
     }
 
     createScatterFolder() {

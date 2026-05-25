@@ -61,9 +61,54 @@ export class Wagon extends CGFobject {
 
         this.carriedBales = [];
         this.maxBales = 2;
+
+        this.maxHP = 100;
+        this.hp = this.maxHP;
+        this.isDead = false;
+        this.lastDamageTime = 0;
+        this.damageCooldown = 1000;
+        this.hpDecayRate = 0.50;
+        this.lastUpdateTime = 0;
+    }
+
+    takeDamage(amount) {
+        if (this.isDead) return;
+
+        const now = Date.now();
+        if (now - this.lastDamageTime < this.damageCooldown) return;
+
+        this.hp = Math.max(0, this.hp - amount);
+        this.lastDamageTime = now;
+
+        if (this.hp <= 0) {
+            this.hp = 0;
+            this.isDead = true;
+            this.speed = 0;
+        }
     }
 
     update(t) {
+        if (this.lastUpdateTime === 0) {
+            this.lastUpdateTime = t;
+            return;
+        }
+
+        const dt = (t - this.lastUpdateTime) / 1000.0;
+        this.lastUpdateTime = t;
+
+        if (this.isDead) {
+            this.speed = 0;
+            return;
+        }
+
+        if (this.hp > 0) {
+            this.hp = Math.max(0, this.hp - this.hpDecayRate * dt);
+            if (this.hp <= 0) {
+                this.hp = 0;
+                this.isDead = true;
+            }
+        }
+
         this.updateMovement();
         this.updatePositionOnTerrain();
     }
