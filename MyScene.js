@@ -1,4 +1,10 @@
-import { CGFscene, CGFcamera, CGFaxis, CGFtexture, CGFappearance} from "../lib/CGF.js";
+import {
+  CGFscene,
+  CGFcamera,
+  CGFaxis,
+  CGFtexture,
+  CGFappearance,
+} from "../lib/CGF.js";
 import { SkyDome } from "./world/SkyDome.js";
 import { PrairieTerrain } from "./world/PrairieTerrain.js";
 import { Sun } from "./world/Sun.js";
@@ -126,7 +132,6 @@ export class MyScene extends CGFscene {
 
     this.baleAreaRadius = 20;
     this.baleAreaHeight = 4;
-    this.wagonRadius = 1.8;
     this.wagonIntersecting = false;
 
     this.barnWallTexture = new CGFtexture(this, "textures/barn_wall.png");
@@ -160,15 +165,15 @@ export class MyScene extends CGFscene {
     this.barnWindowMaterial.setTexture(this.barnWindowTexture);
 
     this.baleNormalMat = new CGFappearance(this);
-    this.baleNormalMat.setAmbient(1, 1, 1, 0.1);      
-    this.baleNormalMat.setDiffuse(0.8, 0.7, 0.0, 0.1);  
-    this.baleNormalMat.setSpecular(0.1, 0.1, 0.0, 0.1); 
+    this.baleNormalMat.setAmbient(1, 1, 1, 0.1);
+    this.baleNormalMat.setDiffuse(0.8, 0.7, 0.0, 0.1);
+    this.baleNormalMat.setSpecular(0.1, 0.1, 0.0, 0.1);
     this.baleNormalMat.setShininess(1);
 
     this.baleActiveMat = new CGFappearance(this);
-    this.baleActiveMat.setAmbient(0.0, 0.9, 0.1, 0.15);  
-    this.baleActiveMat.setDiffuse(0.0, 0.9, 0.1, 0.15);  
-    this.baleActiveMat.setSpecular(0.0, 0.1, 0.0, 0.15); 
+    this.baleActiveMat.setAmbient(0.0, 0.9, 0.1, 0.15);
+    this.baleActiveMat.setDiffuse(0.0, 0.9, 0.1, 0.15);
+    this.baleActiveMat.setSpecular(0.0, 0.1, 0.0, 0.15);
     this.baleActiveMat.setShininess(5);
 
     this.barn = new Barn(
@@ -220,6 +225,15 @@ export class MyScene extends CGFscene {
 
     this.hayBales = [];
     this.spawnHayBales(15);
+
+    // COlisao
+    this.wagonRadius = 1.8;
+    this.horseRadius = 1.2;
+    this.barnRadius = 8.5;
+    this.worldBoundaryRadius = 90;
+
+    this.wagonHealth = 100;
+    this.collisionCooldown = 0;
   }
 
   spawnHayBales(num) {
@@ -298,6 +312,7 @@ export class MyScene extends CGFscene {
 
     if (this.wagon) {
       this.wagon.update(t);
+      this.checkCollision();
 
       const dx = this.wagon.x - this.barnX;
       const dz = this.wagon.z - this.barnZ;
@@ -382,8 +397,129 @@ export class MyScene extends CGFscene {
       const dropZ = this.wagon.z + rightZ * offset;
 
       bale.setPosition(dropX, dropZ);
-      bale.rotation = angle; 
+      bale.rotation = angle;
     }
+  }
+
+  checkCollision() {
+    if (this.collisionCooldown > 0) {
+      this.collisionCooldown--;
+      return;
+    }
+
+    const wx = this.wagon.x;
+    const wz = this.wagon.z;
+
+    for (const rock of this.rockField.getCollisionObjects()) {
+      const dx = wx - rock.x;
+      const dz = wz - rock.z;
+      const distSq = dx * dx + dz * dz;
+      const radSum = this.wagonRadius + rock.radius;
+
+      if (distSq < radSum * radSum) {
+        this.wagonHealth -= 10;
+        this.collisionCooldown = 20;
+        console.warn("Collision with rock! Health:", this.wagonHealth);
+
+        const dist = Math.sqrt(distSq);
+        const overlap = radSum - dist;
+        const nx = dx / dist;
+        const nz = dz / dist;
+        this.wagon.x += nx * overlap;
+        this.wagon.z += nz * overlap;
+        break;
+      }
+    }
+
+    for (const horse of this.horses) {
+      for (const rock of this.rockField.getCollisionObjects()) {
+        const dx = horse.x - rock.x;
+        const dz = horse.z - rock.z;
+        const distSq = dx * dx + dz * dz;
+        const radSum = this.horseRadius + rock.radius;
+
+        if (distSq < radSum * radSum) {
+          this.wagonHealth -= 10;
+          this.collisionCooldown = 20;
+          console.warn("Horse collision with rock! Health:", this.wagonHealth);
+
+          const dist = Math.sqrt(distSq);
+          const overlap = radSum - dist;
+          const nx = dx / dist;
+          const nz = dz / dist;
+          this.wagon.x += nx * overlap;
+          this.wagon.z += nz * overlap;
+          break;
+        }
+      }
+
+      const dxBarnH = horse.x - this.barnX;
+      const dzBarnH = horse.z - this.barnZ;
+      const distSqBarnH = dxBarnH * dxBarnH + dzBarnH * dzBarnH;
+      const radSumBarnH = this.horseRadius + this.barnRadius;
+
+      if (distSqBarnH < radSumBarnH * radSumBarnH) {
+        this.wagonHealth -= 5;
+        this.collisionCooldown = 20;
+        console.warn("Horse collision with barn! Health:", this.wagonHealth);
+
+        const distBarnH = Math.sqrt(distSqBarnH);
+        const overlapBarnH = radSumBarnH - distBarnH;
+        const nxBarnH = dxBarnH / distBarnH;
+        const nzBarnH = dzBarnH / distBarnH;
+        this.wagon.x += nxBarnH * overlapBarnH;
+        this.wagon.z += nzBarnH * overlapBarnH;
+      }
+
+      const distWorldH = Math.sqrt(horse.x * horse.x + horse.z * horse.z);
+
+      if (distWorldH + this.horseRadius > this.worldBoundaryRadius) {
+        this.wagonHealth -= 5;
+        this.collisionCooldown = 20;
+        console.warn("Horse hit boundary! Health:", this.wagonHealth);
+
+        const nxH = horse.x / distWorldH;
+        const nzH = horse.z / distWorldH;
+        const overlapH =
+          distWorldH + this.horseRadius - this.worldBoundaryRadius;
+        this.wagon.x -= nxH * overlapH;
+        this.wagon.z -= nzH * overlapH;
+      }
+    }
+
+    const dxBarn = wx - this.barnX;
+    const dzBarn = wz - this.barnZ;
+    const distSqBarn = dxBarn * dxBarn + dzBarn * dzBarn;
+    const radSumBarn = this.wagonRadius + this.barnRadius;
+
+    if (distSqBarn < radSumBarn * radSumBarn) {
+      this.wagonHealth -= 5;
+      this.collisionCooldown = 20;
+      console.warn("Collision with barn! Health:", this.wagonHealth);
+
+      const distBarn = Math.sqrt(distSqBarn);
+      const overlapBarn = radSumBarn - distBarn;
+      const nxBarn = dxBarn / distBarn;
+      const nzBarn = dzBarn / distBarn;
+      this.wagon.x += nxBarn * overlapBarn;
+      this.wagon.z += nzBarn * overlapBarn;
+    }
+
+    const distWorld = Math.sqrt(wx * wx + wz * wz);
+
+    if (distWorld + this.wagonRadius > this.worldBoundaryRadius) {
+      this.wagonHealth -= 5;
+      this.collisionCooldown = 20;
+      console.warn("Hit boundary! Health:", this.wagonHealth);
+
+      const nx = wx / distWorld;
+      const nz = wz / distWorld;
+      const overlap = distWorld + this.wagonRadius - this.worldBoundaryRadius;
+      this.wagon.x -= nx * overlap;
+      this.wagon.z -= nz * overlap;
+    }
+
+    this.wagonHealth = Math.max(0, this.wagonHealth);
   }
 
   display() {
