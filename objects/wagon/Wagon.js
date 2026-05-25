@@ -54,6 +54,7 @@ export class Wagon extends CGFobject {
         this.coverFrameAppearance = this.createAppearance(this.config.materials.coverFrameWood);
 
         this.bed = components.bed ?? new WagonBed(scene, this.config.bed);
+        this.seat = components.seat ?? new Box(scene);
         this.cover = components.cover ?? new WagonCover(scene, this.config.cover);
         this.frontAxle = components.frontAxle ?? new Box(scene);
         this.rearAxle = components.rearAxle ?? new Box(scene);
@@ -70,12 +71,14 @@ export class Wagon extends CGFobject {
 
     updateMovement() {
         const movement = this.config.movement;
+        const accelerating = this.scene.gui?.isKeyPressed?.("KeyW");
+        const braking = this.scene.gui?.isKeyPressed?.("KeyS");
 
-        if (this.scene.gui?.isKeyPressed?.("KeyW")) {
+        if (accelerating) {
             this.speed += movement.acceleration;
         }
 
-        if (this.scene.gui?.isKeyPressed?.("KeyS")) {
+        if (braking) {
             this.speed -= movement.brake;
         }
 
@@ -93,8 +96,13 @@ export class Wagon extends CGFobject {
             Math.min(this.steeringAngle, movement.maxSteeringAngle)
         );
 
-        if (this.speed > 0) {
-            this.orientation += this.steeringAngle * this.speed * 0.08;
+        if (Math.abs(this.speed) > 0.0001) {
+            const turnSpeed = Math.max(Math.abs(this.speed), movement.minTurningSpeed);
+
+            this.orientation +=
+                this.steeringAngle *
+                turnSpeed *
+                movement.turningResponsiveness;
 
             this.x += Math.sin(this.orientation) * this.speed;
             this.z += Math.cos(this.orientation) * this.speed;
@@ -102,7 +110,13 @@ export class Wagon extends CGFobject {
             this.wheelRotation += this.speed / this.wheelRadius;
         }
 
-        this.speed = Math.max(0, this.speed - movement.friction);
+        if (!accelerating && !braking) {
+            this.applyFriction(movement.friction);
+        }
+    }
+
+    applyFriction(friction) {
+        this.speed = Math.max(0, this.speed - friction);
     }
 
     updatePositionOnTerrain() {
@@ -118,6 +132,7 @@ export class Wagon extends CGFobject {
         this.scene.rotate(this.orientation, 0, 1, 0);
 
         if (this.parts.bed) this.displayBed();
+        if (this.parts.seat) this.displaySeat();
         if (this.parts.cover) this.displayCover();
 
         this.displayCarriedBales();
@@ -150,6 +165,23 @@ export class Wagon extends CGFobject {
         this.scene.scale(this.bodyWidth, this.bodyHeight, this.bodyLength);
         this.bedAppearance.apply();
         this.bed.display(null, this.bedSeamAppearance);
+        this.scene.popMatrix();
+    }
+
+    displaySeat() {
+        if (!this.seat) return;
+
+        const seat = this.config.seat;
+
+        this.scene.pushMatrix();
+        this.scene.translate(
+            0,
+            this.groundClearance-1 + this.bodyHeight + seat.yOffset + seat.thickness / 2,
+            this.bodyLength / 2 + seat.frontOffset + seat.depth / 2
+        );
+        this.scene.scale(this.bodyWidth * seat.widthRatio, seat.thickness, seat.depth);
+        this.bedAppearance.apply();
+        this.seat.display();
         this.scene.popMatrix();
     }
 

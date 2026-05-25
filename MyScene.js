@@ -26,7 +26,7 @@ export class MyScene extends CGFscene {
 
     this.initCameras();
 
-    this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    this.gl.clearColor(0.45, 0.65, 1.0, 1.0);
     this.gl.clearDepth(100.0);
     this.gl.enable(this.gl.DEPTH_TEST);
     this.gl.enable(this.gl.CULL_FACE);
