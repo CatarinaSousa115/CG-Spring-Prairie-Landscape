@@ -11,15 +11,69 @@ body, html {
     padding: 0;
     margin: 0;
     overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 canvas {
     width: 100%;
     height: 100%;
 }
+
+/* Overlay de Jogo */
+#game-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    padding: 40px 60px;
+    border-radius: 15px;
+    text-align: center;
+    display: none;
+    z-index: 100;
+    border: 3px solid #ffcc00;
+    box-shadow: 0 0 30px rgba(0,0,0,0.5);
+}
+
+#game-overlay h1 {
+    font-size: 48px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+}
+
+#game-overlay p {
+    font-size: 20px;
+    margin-bottom: 30px;
+    color: #ccc;
+}
+
+#restart-button {
+    background: #ffcc00;
+    color: black;
+    border: none;
+    padding: 15px 40px;
+    font-size: 22px;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+}
+
+#restart-button:hover {
+    background: #ffaa00;
+    transform: scale(1.05);
+}
 </style>
 </head>
 <body>
+
+<div id="game-overlay">
+    <h1 id="status-title"></h1>
+    <p id="status-message"></p>
+    <button id="restart-button"></button>
+</div>
 
 <script type="module" src="main.js"></script>
 

@@ -220,6 +220,7 @@ export class MyScene extends CGFscene {
     this.sunAngle = 0;
     this.time = 0;
     this.startTime = undefined;
+    this.gameStatus = "playing"; 
 
     this.lastPathWidth = this.wagonPath.width;
     this.flowerField = new FlowerField(
@@ -242,6 +243,10 @@ export class MyScene extends CGFscene {
     this.worldBoundaryRadius = 90;
 
     this.collisionCooldown = 0;
+
+    // botao HTML
+    const restartBtn = document.getElementById("restart-button");
+    if (restartBtn) restartBtn.onclick = () => this.restartGame();
   }
 
   spawnHayBales(num) {
@@ -312,6 +317,8 @@ export class MyScene extends CGFscene {
   }
 
   update(t) {
+    if (this.gameStatus !== "playing") return;
+
     if (this.startTime === undefined) this.startTime = t;
 
     this.time = (t - this.startTime) * 0.001;
@@ -330,6 +337,7 @@ export class MyScene extends CGFscene {
         distance < this.baleAreaRadius + this.wagonRadius;
 
       this.checkKeys();
+      this.checkGameStatus();
     }
 
     if (this.horses && this.wagon) {
@@ -344,6 +352,64 @@ export class MyScene extends CGFscene {
       this.lastPathWidth = this.wagonPath.width;
       this.grassField.rebuild();
     }
+  }
+
+  checkGameStatus() {
+    if (this.wagon.isDead) {
+      this.endGame(false);
+      return;
+    }
+
+    const deliveredCount = this.hayBales.filter((b) => b.isDelivered).length;
+    if (deliveredCount === this.hayBales.length && this.hayBales.length > 0) {
+      this.endGame(true);
+    }
+  }
+
+  endGame(win) {
+    this.gameStatus = win ? "won" : "lost";
+    const overlay = document.getElementById("game-overlay");
+    const title = document.getElementById("status-title");
+    const message = document.getElementById("status-message");
+    const button = document.getElementById("restart-button");
+
+    if (overlay) overlay.style.display = "block";
+    if (win) {
+      if (title) {
+        title.innerText = "YOU WIN!";
+        title.style.color = "#00ff00";
+      }
+      if (message)
+        message.innerText = `Congratulations! All bales delivered in ${this.gameTime}.`;
+      if (button) button.innerText = "PLAY AGAIN";
+    } else {
+      if (title) {
+        title.innerText = "GAME OVER";
+        title.style.color = "#ff0000";
+      }
+      if (message) message.innerText = "Your wagon was destroyed.";
+      if (button) button.innerText = "RETRY";
+    }
+  }
+
+  restartGame() {
+    this.gameStatus = "playing";
+    this.startTime = undefined;
+    this.time = 0;
+
+    this.wagon.hp = this.wagon.maxHP;
+    this.wagon.isDead = false;
+    this.wagon.x = 0;
+    this.wagon.z = 0;
+    this.wagon.speed = 0;
+    this.wagon.orientation = 0;
+    this.wagon.carriedBales = [];
+
+    this.hayBales = [];
+    this.spawnHayBales(15);
+
+    const overlay = document.getElementById("game-overlay");
+    if (overlay) overlay.style.display = "none";
   }
 
   updateFollowCamera() {
