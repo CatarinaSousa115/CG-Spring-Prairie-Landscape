@@ -1,4 +1,4 @@
-import { CGFscene, CGFcamera, CGFaxis, CGFtexture, CGFappearance} from "../lib/CGF.js";
+import { CGFscene, CGFcamera, CGFaxis, CGFtexture, CGFappearance, CGFshader} from "../lib/CGF.js";
 import { SkyDome } from "./world/SkyDome.js";
 import { PrairieTerrain } from "./world/PrairieTerrain.js";
 import { Sun } from "./world/Sun.js";
@@ -86,6 +86,14 @@ export class MyScene extends CGFscene {
       }),
     ];
 
+    this.cameraFollowHorse = true;
+    this.cameraFollowDistance = 50;
+    this.cameraFollowHeight = 15;
+    this.cameraFollowLookAhead = 3.6;
+    this.cameraFollowSmoothing = 0.16;
+    this.cameraFollowPosition = null;
+    this.cameraFollowTarget = null;
+
     this.grassField = new GrassField(this, {
       terrain: this.terrain,
       wagonPath: this.wagonPath,
@@ -160,15 +168,15 @@ export class MyScene extends CGFscene {
     this.barnWindowMaterial.setTexture(this.barnWindowTexture);
 
     this.baleNormalMat = new CGFappearance(this);
-    this.baleNormalMat.setAmbient(1, 1, 1, 0.1);      
-    this.baleNormalMat.setDiffuse(0.8, 0.7, 0.0, 0.1);  
-    this.baleNormalMat.setSpecular(0.1, 0.1, 0.0, 0.1); 
+    this.baleNormalMat.setAmbient(1, 1, 1, 0.1);
+    this.baleNormalMat.setDiffuse(0.8, 0.7, 0.0, 0.1);
+    this.baleNormalMat.setSpecular(0.1, 0.1, 0.0, 0.1);
     this.baleNormalMat.setShininess(1);
 
     this.baleActiveMat = new CGFappearance(this);
-    this.baleActiveMat.setAmbient(0.0, 0.9, 0.1, 0.15);  
-    this.baleActiveMat.setDiffuse(0.0, 0.9, 0.1, 0.15);  
-    this.baleActiveMat.setSpecular(0.0, 0.1, 0.0, 0.15); 
+    this.baleActiveMat.setAmbient(0.0, 0.9, 0.1, 0.15);
+    this.baleActiveMat.setDiffuse(0.0, 0.9, 0.1, 0.15);
+    this.baleActiveMat.setSpecular(0.0, 0.1, 0.0, 0.15);
     this.baleActiveMat.setShininess(5);
 
     this.barn = new Barn(
@@ -180,6 +188,13 @@ export class MyScene extends CGFscene {
     );
 
     this.baleArea = new Cylinder(this, 40, 1);
+    this.baleAreaShader = new CGFshader(
+      this.gl,
+      "shaders/area.vert",
+      "shaders/area.frag",
+    );
+    this.baleAreaNormalColor = [1.0, 0.929, 0.161, 0.75];
+    this.baleAreaActiveColor = [0.0, 1.0, 0.0, 0.75];
 
     this.initLights();
     this.setUpdatePeriod(50);
@@ -315,10 +330,80 @@ export class MyScene extends CGFscene {
       }
     }
 
+    this.updateFollowCamera();
+
     if (this.wagonPath.width !== this.lastPathWidth) {
       this.lastPathWidth = this.wagonPath.width;
       this.grassField.rebuild();
     }
+  }
+
+  updateFollowCamera() {
+    if (!this.cameraFollowHorse || !this.horses?.length || !this.camera) return;
+
+    const horseCenter = this.getHorseTeamCenter();
+    if (!horseCenter) return;
+
+    const orientation = this.wagon?.orientation ?? this.horses[0].orientation ?? 0;
+    const directionX = Math.sin(orientation);
+    const directionZ = Math.cos(orientation);
+    const scale = this.scaleFactor ?? 1;
+
+    const target = [
+      (horseCenter.x + directionX * this.cameraFollowLookAhead) * scale,
+      (horseCenter.y + 1.8) * scale,
+      (horseCenter.z + directionZ * this.cameraFollowLookAhead) * scale,
+    ];
+
+    const position = [
+      (horseCenter.x - directionX * this.cameraFollowDistance) * scale,
+      (horseCenter.y + this.cameraFollowHeight) * scale,
+      (horseCenter.z - directionZ * this.cameraFollowDistance) * scale,
+    ];
+
+    this.cameraFollowPosition = this.lerpCameraPoint(
+      this.cameraFollowPosition,
+      position,
+      this.cameraFollowSmoothing,
+    );
+    this.cameraFollowTarget = this.lerpCameraPoint(
+      this.cameraFollowTarget,
+      target,
+      this.cameraFollowSmoothing,
+    );
+
+    this.camera.setPosition(vec3.fromValues(...this.cameraFollowPosition));
+    this.camera.setTarget(vec3.fromValues(...this.cameraFollowTarget));
+  }
+
+  getHorseTeamCenter() {
+    if (!this.horses?.length) return null;
+
+    let x = 0;
+    let y = 0;
+    let z = 0;
+
+    for (const horse of this.horses) {
+      x += horse.x;
+      y += horse.y;
+      z += horse.z;
+    }
+
+    return {
+      x: x / this.horses.length,
+      y: y / this.horses.length,
+      z: z / this.horses.length,
+    };
+  }
+
+  lerpCameraPoint(current, target, amount) {
+    if (!current) return [...target];
+
+    return [
+      current[0] + (target[0] - current[0]) * amount,
+      current[1] + (target[1] - current[1]) * amount,
+      current[2] + (target[2] - current[2]) * amount,
+    ];
   }
 
   checkKeys() {
@@ -447,12 +532,14 @@ export class MyScene extends CGFscene {
       this.translate(this.barnX, this.barnY - 2, this.barnZ);
       this.rotate(-Math.PI / 2, 1, 0, 0);
       this.scale(this.baleAreaRadius, this.baleAreaRadius, this.baleAreaHeight);
-      if (this.wagonIntersecting) {
-        this.baleActiveMat.apply();
-      } else {
-        this.baleNormalMat.apply();
-      }
+      this.setActiveShader(this.baleAreaShader);
+      this.baleAreaShader.setUniformsValues({
+        uBaseColor: this.wagonIntersecting
+          ? this.baleAreaActiveColor
+          : this.baleAreaNormalColor,
+      });
       this.baleArea.display();
+      this.setActiveShader(this.defaultShader);
       this.popMatrix();
     }
 
