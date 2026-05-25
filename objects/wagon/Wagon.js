@@ -87,6 +87,11 @@ export class Wagon extends CGFobject {
         }
     }
 
+    repair(amount) {
+        if (this.isDead) return;
+        this.hp = Math.min(this.maxHP, this.hp + amount);
+    }
+
     update(t) {
         if (this.lastUpdateTime === 0) {
             this.lastUpdateTime = t;

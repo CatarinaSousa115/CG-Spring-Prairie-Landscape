@@ -232,7 +232,6 @@ export class MyScene extends CGFscene {
     this.barnRadius = 8.5;
     this.worldBoundaryRadius = 90;
 
-    this.wagonHealth = 100;
     this.collisionCooldown = 0;
   }
 
@@ -357,7 +356,7 @@ export class MyScene extends CGFscene {
     let minDistance = 10.0;
 
     for (const bale of this.hayBales) {
-      if (bale.isPickedUp) continue;
+      if (bale.isPickedUp || bale.isDelivered) continue;
 
       const dx = bale.x - this.wagon.x;
       const dz = bale.z - this.wagon.z;
@@ -375,24 +374,46 @@ export class MyScene extends CGFscene {
     }
   }
 
+  get deliveryProgress() {
+    const delivered = this.hayBales.filter((b) => b.isDelivered).length;
+    return `${delivered}/${this.hayBales.length}`;
+  }
+
   dropBale() {
     if (this.wagon.carriedBales.length === 0) return;
 
-    if (this.wagonIntersecting) {
-      const bale = this.wagon.carriedBales.pop();
-      bale.isPickedUp = false;
+    const bale = this.wagon.carriedBales.pop();
+    bale.isPickedUp = false;
 
+    if (this.wagonIntersecting) {
+      bale.isDelivered = true;
+      this.wagon.repair(15);
+      const deliveredCount =
+        this.hayBales.filter((b) => b.isDelivered).length - 1;
+
+      // Organizacao em grelha dentro do celeiro
+      const balesPerLayer = 4;
+      const layer = Math.floor(deliveredCount / balesPerLayer);
+      const indexInLayer = deliveredCount % balesPerLayer;
+
+      const localX = 0;
+      const localZ = -2.25 + indexInLayer * 1.5; 
+      const localY = layer * 1.5; 
+      const cosR = Math.cos(this.barnRotation);
+      const sinR = Math.sin(this.barnRotation);
+
+      const worldOffsetX = localX * cosR + localZ * sinR;
+      const worldOffsetZ = -localX * sinR + localZ * cosR;
+
+      bale.setPosition(this.barnX - 5 + worldOffsetX, this.barnZ + worldOffsetZ);
+      bale.y = this.barnY - 2 + localY;
+      bale.rotation = this.barnRotation;
+    } else {
       const angle = this.wagon.orientation;
       const rightX = Math.cos(angle);
       const rightZ = -Math.sin(angle);
 
-      const toBarnX = this.barnX - this.wagon.x;
-      const toBarnZ = this.barnZ - this.wagon.z;
-
-      const dot = toBarnX * rightX + toBarnZ * rightZ;
-      const sideSign = dot > 0 ? 1 : -1;
-
-      const offset = 3.0 * sideSign;
+      const offset = 3.0;
       const dropX = this.wagon.x + rightX * offset;
       const dropZ = this.wagon.z + rightZ * offset;
 
@@ -417,9 +438,8 @@ export class MyScene extends CGFscene {
       const radSum = this.wagonRadius + rock.radius;
 
       if (distSq < radSum * radSum) {
-        this.wagonHealth -= 10;
+        this.wagon.takeDamage(10);
         this.collisionCooldown = 20;
-        console.warn("Collision with rock! Health:", this.wagonHealth);
 
         const dist = Math.sqrt(distSq);
         const overlap = radSum - dist;
@@ -439,9 +459,8 @@ export class MyScene extends CGFscene {
         const radSum = this.horseRadius + rock.radius;
 
         if (distSq < radSum * radSum) {
-          this.wagonHealth -= 10;
+          this.wagon.takeDamage(10);
           this.collisionCooldown = 20;
-          console.warn("Horse collision with rock! Health:", this.wagonHealth);
 
           const dist = Math.sqrt(distSq);
           const overlap = radSum - dist;
@@ -459,9 +478,8 @@ export class MyScene extends CGFscene {
       const radSumBarnH = this.horseRadius + this.barnRadius;
 
       if (distSqBarnH < radSumBarnH * radSumBarnH) {
-        this.wagonHealth -= 5;
+        this.wagon.takeDamage(5);
         this.collisionCooldown = 20;
-        console.warn("Horse collision with barn! Health:", this.wagonHealth);
 
         const distBarnH = Math.sqrt(distSqBarnH);
         const overlapBarnH = radSumBarnH - distBarnH;
@@ -474,9 +492,8 @@ export class MyScene extends CGFscene {
       const distWorldH = Math.sqrt(horse.x * horse.x + horse.z * horse.z);
 
       if (distWorldH + this.horseRadius > this.worldBoundaryRadius) {
-        this.wagonHealth -= 5;
+        this.wagon.takeDamage(5);
         this.collisionCooldown = 20;
-        console.warn("Horse hit boundary! Health:", this.wagonHealth);
 
         const nxH = horse.x / distWorldH;
         const nzH = horse.z / distWorldH;
@@ -493,9 +510,8 @@ export class MyScene extends CGFscene {
     const radSumBarn = this.wagonRadius + this.barnRadius;
 
     if (distSqBarn < radSumBarn * radSumBarn) {
-      this.wagonHealth -= 5;
+      this.wagon.takeDamage(5);
       this.collisionCooldown = 20;
-      console.warn("Collision with barn! Health:", this.wagonHealth);
 
       const distBarn = Math.sqrt(distSqBarn);
       const overlapBarn = radSumBarn - distBarn;
@@ -508,9 +524,8 @@ export class MyScene extends CGFscene {
     const distWorld = Math.sqrt(wx * wx + wz * wz);
 
     if (distWorld + this.wagonRadius > this.worldBoundaryRadius) {
-      this.wagonHealth -= 5;
+      this.wagon.takeDamage(5);
       this.collisionCooldown = 20;
-      console.warn("Hit boundary! Health:", this.wagonHealth);
 
       const nx = wx / distWorld;
       const nz = wz / distWorld;
@@ -518,8 +533,6 @@ export class MyScene extends CGFscene {
       this.wagon.x -= nx * overlap;
       this.wagon.z -= nz * overlap;
     }
-
-    this.wagonHealth = Math.max(0, this.wagonHealth);
   }
 
   display() {

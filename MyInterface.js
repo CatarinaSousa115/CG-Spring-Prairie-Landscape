@@ -185,6 +185,7 @@ export class MyInterface extends CGFinterface {
         const hpFolder = this.gui.addFolder("HP");
         hpFolder.add(this.scene.wagon, 'hp', 0, 100).name('Health').listen();
         hpFolder.add(this.scene.wagon, 'isDead').name('Game Over').listen();
+        hpFolder.add(this.scene, 'deliveryProgress').name('Bales delivered').listen();
 
         hpFolder.open();
     }

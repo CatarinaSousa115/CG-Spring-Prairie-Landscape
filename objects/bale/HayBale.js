@@ -15,6 +15,7 @@ export class HayBale extends CGFobject {
     this.z = 0;
     this.rotation = Math.random() * Math.PI * 2;
     this.isPickedUp = false;
+    this.isDelivered = false;
 
     this.visibilityRadius = 25.0;
 
@@ -39,6 +40,7 @@ export class HayBale extends CGFobject {
   }
 
   isNear(x, z, radius = 2.0) {
+    if (this.isDelivered) return false;
     const dx = this.x - x;
     const dz = this.z - z;
     return Math.sqrt(dx * dx + dz * dz) < radius;
@@ -55,14 +57,16 @@ export class HayBale extends CGFobject {
     this.scene.pushMatrix();
     this.scene.translate(this.x, this.y, this.z);
 
-    this.scene.pushMatrix();
-    this.scene.translate(0, 5, 0);
-    this.arrow.display(this.scene.time);
-    this.scene.popMatrix();
-
-    if (isVisible) {
+    if (!this.isDelivered) {
       this.scene.pushMatrix();
-      this.scene.translate(0, 0.5, 0); 
+      this.scene.translate(0, 5, 0);
+      this.arrow.display(this.scene.time);
+      this.scene.popMatrix();
+    }
+
+    if (isVisible || this.isDelivered) {
+      this.scene.pushMatrix();
+      this.scene.translate(0, 0.75, 0); 
       this.scene.rotate(this.rotation, 0, 1, 0);
       this.scene.scale(3.0, 1.5, 1.5);
       this.material.apply();
