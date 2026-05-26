@@ -151,9 +151,9 @@ export class MyScene extends CGFscene {
     this.barnWallMaterial.setTexture(this.barnWallTexture);
 
     this.barnLogoMaterial = new CGFappearance(this);
-    this.barnLogoMaterial.setAmbient(0.08, 0.06, 0.05, 1.0);
-    this.barnLogoMaterial.setDiffuse(0.22, 0.12, 0.09, 1.0);
-    this.barnLogoMaterial.setSpecular(0.02, 0.02, 0.02, 1.0);
+    this.barnLogoMaterial.setAmbient(1.0, 1.0, 1.0, 1.0);
+    this.barnLogoMaterial.setDiffuse(1.0, 1.0, 1.0, 1.0);
+    this.barnLogoMaterial.setSpecular(0.1, 0.1, 0.1, 1.0);
     this.barnLogoMaterial.setShininess(1.0);
     this.barnLogoMaterial.setTexture(this.barnLogoTexture);
     this.barnLogoMaterial.setTextureWrap("CLAMP_TO_EDGE", "CLAMP_TO_EDGE");

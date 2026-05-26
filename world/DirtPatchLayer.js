@@ -107,7 +107,6 @@ export class DirtPatchLayer {
     }
 
     this.scene.gl.depthMask(true);
-    this.scene.gl.disable(this.scene.gl.BLEND);
   }
 
   displayPatch(patch) {

@@ -1,6 +1,6 @@
 export const DEFAULT_WAGON_CONFIG = {
     movement: {
-        maxSpeed: 0.18,
+        maxSpeed: 0.5,
         acceleration: 0.012,
         brake: 0.025,
         friction: 0.004,

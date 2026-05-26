@@ -68,7 +68,7 @@ export class Barn extends CGFobject {
 
       if (this.logoMat) {
       this.scene.pushMatrix();
-      this.scene.translate(0, 3.9, 3.57);
+      this.scene.translate(0, 3.7, 3.57);
       this.scene.scale(1.8, 0.9, 1);
       this.logoMat.apply();
       this.quad.display();
