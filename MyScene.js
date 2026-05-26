@@ -372,6 +372,11 @@ export class MyScene extends CGFscene {
       return;
     }
 
+    if (this.wagon.win) {
+      this.endGame(true);
+      return;
+    }
+
     const deliveredCount = this.hayBales.filter((b) => b.isDelivered).length;
     if (deliveredCount === this.hayBales.length && this.hayBales.length > 0) {
       this.endGame(true);
@@ -380,6 +385,8 @@ export class MyScene extends CGFscene {
 
   endGame(win) {
     this.gameStatus = win ? "won" : "lost";
+    if (this.wagon) this.wagon.win = win;
+
     const overlay = document.getElementById("game-overlay");
     const title = document.getElementById("status-title");
     const message = document.getElementById("status-message");
@@ -411,6 +418,7 @@ export class MyScene extends CGFscene {
 
     this.wagon.hp = this.wagon.maxHP;
     this.wagon.isDead = false;
+    this.wagon.win = false;
     this.wagon.x = 0;
     this.wagon.z = 0;
     this.wagon.speed = 0;
@@ -535,6 +543,12 @@ export class MyScene extends CGFscene {
     const delivered = this.hayBales.filter((b) => b.isDelivered).length;
     return `${delivered}/${this.hayBales.length}`;
   }
+  set deliveryProgress(val) {}
+
+  get isWon() {
+    return this.gameStatus === "won";
+  }
+  set isWon(val) {}
 
   get gameTime() {
     const mins = Math.floor(this.time / 60);
@@ -543,6 +557,7 @@ export class MyScene extends CGFscene {
       .toString()
       .padStart(2, "0")}`;
   }
+  set gameTime(val) {}
 
   dropBale() {
     if (this.wagon.carriedBales.length === 0) return;

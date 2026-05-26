@@ -66,6 +66,7 @@ export class Wagon extends CGFobject {
         this.maxHP = 100;
         this.hp = this.maxHP;
         this.isDead = false;
+        this.win = false;
         this.lastDamageTime = 0;
         this.damageCooldown = 1000;
         this.hpDecayRate = 0.50;
