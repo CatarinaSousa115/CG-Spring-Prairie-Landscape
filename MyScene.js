@@ -432,6 +432,25 @@ export class MyScene extends CGFscene {
     if (overlay) overlay.style.display = "none";
   }
 
+  spawnHPPopup(amount, type) {
+    const container = document.getElementById("popup-container");
+    if (!container) return;
+
+    const popup = document.createElement("div");
+    popup.className = `hp-popup ${type}`;
+    popup.innerText = (type === "repair" ? "+" : "-") + amount;
+
+    // Position around the health bar center
+    popup.style.left = "50%";
+    popup.style.top = "80%";
+
+    container.appendChild(popup);
+
+    setTimeout(() => {
+      popup.remove();
+    }, 1200);
+  }
+
   updateFollowCamera() {
     if (!this.cameraFollowHorse || !this.horses?.length || !this.camera) return;
 
