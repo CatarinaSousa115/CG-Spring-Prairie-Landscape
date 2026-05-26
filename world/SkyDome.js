@@ -1,5 +1,5 @@
 import { CGFappearance } from "../../lib/CGF.js";
-import { SemiSphere } from "../primitives/SemiSphere.js";
+import { Sphere } from "../primitives/Sphere.js";
 
 export class SkyDome {
     constructor(scene, options = {}) {
@@ -10,7 +10,7 @@ export class SkyDome {
         this.stacks = options.stacks ?? 16;
         this.followCamera = options.followCamera ?? true;
 
-        this.geometry = new SemiSphere(scene, this.slices, this.stacks);
+        this.geometry = new Sphere(scene, this.slices, this.stacks, 1);
 
         this.appearance = new CGFappearance(scene);
         this.appearance.setAmbient(0.45, 0.65, 1.0, 1);

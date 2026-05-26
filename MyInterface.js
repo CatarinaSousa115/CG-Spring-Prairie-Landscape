@@ -15,6 +15,7 @@ export class MyInterface extends CGFinterface {
         this.gui = new dat.GUI();
         this.gui.width = 320;
 
+        this.createHPFolder();
         this.createSceneFolder();
         this.createSkyFolder();
         this.createWorldFolder();
@@ -177,7 +178,28 @@ export class MyInterface extends CGFinterface {
         gameplayFolder.add(this.scene, 'displayHorse').name('Show horses');
         gameplayFolder.add(this.scene, 'displayBarn').name('Show barn');
         gameplayFolder.add(this.scene, 'displayHayBales').name('Show hay bales');
+        gameplayFolder.add(this.scene, 'cameraFollowHorse').name('Camera follows horses');
+        gameplayFolder
+            .add(this.scene, 'cameraFollowDistance', 6, 24, 0.5)
+            .name('Camera distance');
+        gameplayFolder
+            .add(this.scene, 'cameraFollowHeight', 2, 14, 0.5)
+            .name('Camera height');
+        gameplayFolder
+            .add(this.scene, 'cameraFollowLookAhead', 0, 10, 0.5)
+            .name('Camera look ahead');
         gameplayFolder.close();
+    }
+
+    createHPFolder() { 
+        const hpFolder = this.gui.addFolder("HP");
+        hpFolder.add(this.scene.wagon, 'hp', 0, 100).name('Health').listen();
+        hpFolder.add(this.scene.wagon, 'isDead').name('Game Over').listen();
+        hpFolder.add(this.scene.wagon, 'win').name('Win').listen();
+        hpFolder.add(this.scene, 'deliveryProgress').name('Bales delivered').listen();
+        hpFolder.add(this.scene, 'gameTime').name('Time').listen();
+
+        hpFolder.open();
     }
 
     createScatterFolder() {
