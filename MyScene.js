@@ -134,29 +134,43 @@ export class MyScene extends CGFscene {
     this.barnDoorTexture = new CGFtexture(this, "textures/barn_door.png");
     this.barnWindowTexture = new CGFtexture(this, "textures/barn_window.png");
     this.hayBaleTexture = new CGFtexture(this, "textures/hay_bale.png");
+    this.barnLogoTexture = new CGFtexture(this, "textures/cat_logo.png");
 
     this.barnWallMaterial = new CGFappearance(this);
-    this.barnWallMaterial.setAmbient(0.3, 0.3, 0.3, 1.0);
-    this.barnWallMaterial.setDiffuse(0.8, 0.8, 0.8, 1.0);
-    this.barnWallMaterial.setSpecular(0.1, 0.1, 0.1, 1.0);
-    this.barnWallMaterial.setShininess(10.0);
+    this.barnWallMaterial.setAmbient(0.08, 0.06, 0.05, 1.0);
+    this.barnWallMaterial.setDiffuse(0.22, 0.12, 0.09, 1.0);
+    this.barnWallMaterial.setSpecular(0.02, 0.02, 0.02, 1.0);
+    this.barnWallMaterial.setShininess(1.0);
     this.barnWallMaterial.setTexture(this.barnWallTexture);
 
+    this.barnLogoMaterial = new CGFappearance(this);
+    this.barnLogoMaterial.setAmbient(0.08, 0.06, 0.05, 1.0);
+    this.barnLogoMaterial.setDiffuse(0.22, 0.12, 0.09, 1.0);
+    this.barnLogoMaterial.setSpecular(0.02, 0.02, 0.02, 1.0);
+    this.barnLogoMaterial.setShininess(1.0);
+    this.barnLogoMaterial.setTexture(this.barnLogoTexture);
+    this.barnLogoMaterial.setTextureWrap("CLAMP_TO_EDGE", "CLAMP_TO_EDGE");
+
+
     this.barnRoofMaterial = new CGFappearance(this);
-    this.barnRoofMaterial.setAmbient(0.3, 0.3, 0.3, 1.0);
-    this.barnRoofMaterial.setDiffuse(0.7, 0.7, 0.7, 1.0);
-    this.barnRoofMaterial.setSpecular(0.1, 0.1, 0.1, 1.0);
-    this.barnRoofMaterial.setShininess(10.0);
+    this.barnRoofMaterial.setAmbient(0.12, 0.12, 0.12, 1.0);
+    this.barnRoofMaterial.setDiffuse(0.25, 0.25, 0.25, 1.0);
+    this.barnRoofMaterial.setSpecular(0.03, 0.03, 0.03, 1.0);
+    this.barnRoofMaterial.setShininess(3.0);
     this.barnRoofMaterial.setTexture(this.barnRoofTexture);
 
     this.barnDoorMaterial = new CGFappearance(this);
-    this.barnDoorMaterial.setAmbient(0.4, 0.4, 0.4, 1.0);
-    this.barnDoorMaterial.setDiffuse(0.8, 0.8, 0.8, 1.0);
+    this.barnDoorMaterial.setAmbient(0.25, 0.18, 0.14, 1.0);
+    this.barnDoorMaterial.setDiffuse(0.45, 0.32, 0.24, 1.0);
+    this.barnDoorMaterial.setSpecular(0.02, 0.02, 0.02, 1.0);
+    this.barnDoorMaterial.setShininess(2.0);
     this.barnDoorMaterial.setTexture(this.barnDoorTexture);
 
     this.barnWindowMaterial = new CGFappearance(this);
-    this.barnWindowMaterial.setAmbient(0.5, 0.5, 0.5, 1.0);
-    this.barnWindowMaterial.setDiffuse(0.9, 0.9, 0.9, 1.0);
+    this.barnWindowMaterial.setAmbient(0.75, 0.75, 0.75, 1.0);
+    this.barnWindowMaterial.setDiffuse(0.95, 0.95, 0.95, 1.0);
+    this.barnWindowMaterial.setSpecular(0.15, 0.15, 0.15, 1.0);
+    this.barnWindowMaterial.setShininess(10.0);
     this.barnWindowMaterial.setTexture(this.barnWindowTexture);
 
     this.baleNormalMat = new CGFappearance(this);
@@ -177,8 +191,8 @@ export class MyScene extends CGFscene {
       this.barnRoofMaterial,
       this.barnDoorMaterial,
       this.barnWindowMaterial,
+      this.barnLogoMaterial
     );
-
     this.baleArea = new Cylinder(this, 40, 1);
 
     this.initLights();
