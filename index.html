@@ -65,6 +65,57 @@ canvas {
     background: #ffaa00;
     transform: scale(1.05);
 }
+
+/* HUD Bottom */
+#hud-bottom {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #ffcc00;
+    padding: 10px 25px;
+    border-radius: 10px;
+    font-size: 20px;
+    font-weight: bold;
+    border: 2px solid rgba(255, 204, 0, 0.5);
+    pointer-events: none;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.hud-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.hud-label {
+    font-size: 14px;
+    text-transform: uppercase;
+    color: #ccc;
+    letter-spacing: 1px;
+}
+
+/* HP Bar Styles */
+.hp-bar-container {
+    width: 200px;
+    height: 18px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 204, 0, 0.3);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+#hp-fill {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #ff0000, #00ff00);
+    transition: width 0.3s ease-out;
+}
 </style>
 </head>
 <body>
@@ -73,6 +124,31 @@ canvas {
     <h1 id="status-title"></h1>
     <p id="status-message"></p>
     <button id="restart-button"></button>
+</div>
+
+<div id="hud-bottom">
+    <div class="hud-group">
+        <span class="hud-label">HP</span>
+        <div class="hp-bar-container">
+            <div id="hp-fill"></div>
+        </div>
+    </div>
+
+    <div style="width: 2px; height: 30px; background: rgba(255,204,0,0.2);"></div>
+    
+    <div class="hud-group">
+        <span class="hud-label">Time</span>
+        <span id="time-display">00:00</span>
+    </div>
+
+    <div style="width: 2px; height: 30px; background: rgba(255,204,0,0.2);"></div>
+
+    <div class="hud-group">
+        <span class="hud-label">Bales</span>
+        <span id="bales-delivered">0/15</span>
+
+        </div>
+    </div>
 </div>
 
 <script type="module" src="main.js"></script>

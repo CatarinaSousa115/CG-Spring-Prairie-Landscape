@@ -323,6 +323,18 @@ export class MyScene extends CGFscene {
 
     this.time = (t - this.startTime) * 0.001;
 
+    const timeDisplay = document.getElementById("time-display");
+    if (timeDisplay) timeDisplay.innerText = this.gameTime;
+
+    const hpFill = document.getElementById("hp-fill");
+    if (hpFill && this.wagon) {
+      const hpPercent = Math.max(0, (this.wagon.hp / this.wagon.maxHP) * 100);
+      hpFill.style.width = `${hpPercent}%`;
+    }
+
+    const balesDelivered = document.getElementById("bales-delivered");
+    if (balesDelivered) balesDelivered.innerText = this.deliveryProgress;
+
     this.cloudLayer.update(t);
 
     if (this.wagon) {
