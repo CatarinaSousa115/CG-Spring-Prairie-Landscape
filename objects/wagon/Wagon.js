@@ -74,13 +74,17 @@ export class Wagon extends CGFobject {
     }
 
     takeDamage(amount) {
-        if (this.isDead) return;
+        if (this.isDead || this.win) return;
 
         const now = Date.now();
         if (now - this.lastDamageTime < this.damageCooldown) return;
 
         this.hp = Math.max(0, this.hp - amount);
         this.lastDamageTime = now;
+
+        if (this.scene.spawnHPPopup) {
+            this.scene.spawnHPPopup(amount, "damage");
+        }
 
         if (this.hp <= 0) {
             this.hp = 0;
@@ -90,9 +94,14 @@ export class Wagon extends CGFobject {
     }
 
     repair(amount) {
-        if (this.isDead) return;
+        if (this.isDead || this.win) return;
         this.hp = Math.min(this.maxHP, this.hp + amount);
+
+        if (this.scene.spawnHPPopup) {
+            this.scene.spawnHPPopup(amount, "repair");
+        }
     }
+
 
     update(t) {
         if (this.lastUpdateTime === 0) {
