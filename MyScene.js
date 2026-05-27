@@ -1,4 +1,4 @@
-import { CGFscene, CGFcamera, CGFaxis, CGFtexture, CGFappearance, CGFshader} from "../lib/CGF.js";
+import { CGFscene, CGFcamera, CGFaxis, CGFtexture, CGFappearance, CGFshader } from "../lib/CGF.js";
 import { SkyDome } from "./world/SkyDome.js";
 import { PrairieTerrain } from "./world/PrairieTerrain.js";
 import { Sun } from "./world/Sun.js";
@@ -159,7 +159,6 @@ export class MyScene extends CGFscene {
     this.barnLogoMaterial.setTexture(this.barnLogoTexture);
     this.barnLogoMaterial.setTextureWrap("CLAMP_TO_EDGE", "CLAMP_TO_EDGE");
 
-
     this.barnRoofMaterial = new CGFappearance(this);
     this.barnRoofMaterial.setAmbient(0.12, 0.12, 0.12, 1.0);
     this.barnRoofMaterial.setDiffuse(0.25, 0.25, 0.25, 1.0);
@@ -201,6 +200,7 @@ export class MyScene extends CGFscene {
       this.barnWindowMaterial,
       this.barnLogoMaterial
     );
+
     this.baleArea = new Cylinder(this, 40, 1);
     this.baleAreaShader = new CGFshader(
       this.gl,
@@ -235,7 +235,7 @@ export class MyScene extends CGFscene {
     this.sunAngle = 0;
     this.time = 0;
     this.startTime = undefined;
-    this.gameStatus = "playing"; 
+    this.gameStatus = "playing";
 
     this.lastPathWidth = this.wagonPath.width;
     this.flowerField = new FlowerField(
@@ -251,15 +251,21 @@ export class MyScene extends CGFscene {
     this.hayBales = [];
     this.spawnHayBales(15);
 
-    // Colisao
     this.wagonRadius = 1.8;
-    this.horseRadius = 1.2;
-    this.barnRadius = 8.5;
-    this.worldBoundaryRadius = 90;
+    this.wagonHalfWidth = 1.5;
+    this.wagonHalfLength = 2.9;
+    this.wagonMaxExtent = Math.sqrt(this.wagonHalfWidth ** 2 + this.wagonHalfLength ** 2);
+
+    this.horseHalfWidth = 0.42;
+    this.horseHalfLength = 1.35;
+    this.horseMaxExtent = Math.sqrt(this.horseHalfWidth ** 2 + this.horseHalfLength ** 2);
+
+    this.barnHalfWidth = 6.25;
+    this.barnHalfLength = 8.75;
+    this.worldBoundaryRadius = 98;
 
     this.collisionCooldown = 0;
 
-    // UI Manager
     this.uiManager = new MyUIManager(this);
   }
 
@@ -278,7 +284,6 @@ export class MyScene extends CGFscene {
       const z = dist * Math.sin(angle);
 
       if (this.wagonPath.isNearPath(x, z, pathMargin)) continue;
-
       if (this.rockField.isNearRock(x, z, rockMargin)) continue;
 
       const dx = x - this.barnX;
@@ -533,12 +538,12 @@ export class MyScene extends CGFscene {
     const delivered = this.hayBales.filter((b) => b.isDelivered).length;
     return `${delivered}/${this.hayBales.length}`;
   }
-  set deliveryProgress(val) {}
+  set deliveryProgress(val) { }
 
   get isWon() {
     return this.gameStatus === "won";
   }
-  set isWon(val) {}
+  set isWon(val) { }
 
   get gameTime() {
     const mins = Math.floor(this.time / 60);
@@ -547,7 +552,7 @@ export class MyScene extends CGFscene {
       .toString()
       .padStart(2, "0")}`;
   }
-  set gameTime(val) {}
+  set gameTime(val) { }
 
   dropBale() {
     if (this.wagon.carriedBales.length === 0) return;
@@ -561,14 +566,13 @@ export class MyScene extends CGFscene {
       const deliveredCount =
         this.hayBales.filter((b) => b.isDelivered).length - 1;
 
-      // Organizacao em grelha dentro do celeiro
       const balesPerLayer = 4;
       const layer = Math.floor(deliveredCount / balesPerLayer);
       const indexInLayer = deliveredCount % balesPerLayer;
 
       const localX = 0;
-      const localZ = -2.25 + indexInLayer * 1.5; 
-      const localY = layer * 1.5; 
+      const localZ = -2.25 + indexInLayer * 1.5;
+      const localY = layer * 1.5;
       const cosR = Math.cos(this.barnRotation);
       const sinR = Math.sin(this.barnRotation);
 
@@ -600,108 +604,102 @@ export class MyScene extends CGFscene {
 
     const wx = this.wagon.x;
     const wz = this.wagon.z;
+    const wor = this.wagon.orientation;
+    const wHW = this.wagonHalfWidth;
+    const wHL = this.wagonHalfLength;
+
+    const barnCX = this.barnX - 5;
+    const barnCZ = this.barnZ;
+    const barnHW = this.barnHalfWidth;
+    const barnHL = this.barnHalfLength;
+    const barnOr = this.barnRotation;
 
     for (const rock of this.rockField.getCollisionObjects()) {
-      const dx = wx - rock.x;
-      const dz = wz - rock.z;
-      const distSq = dx * dx + dz * dz;
-      const radSum = this.wagonRadius + rock.radius;
-
-      if (distSq < radSum * radSum) {
+      const hit = this.testBoxVsSphere(wx, wz, wHW, wHL, wor, rock.x, rock.z, rock.radius);
+      if (hit) {
         this.wagon.takeDamage(10);
         this.collisionCooldown = 20;
-
-        const dist = Math.sqrt(distSq);
-        const overlap = radSum - dist;
-        const nx = dx / dist;
-        const nz = dz / dist;
-        this.wagon.x += nx * overlap;
-        this.wagon.z += nz * overlap;
+        this.wagon.speed = -this.wagon.speed * 0.8 - 3;
+        this.wagon.x += hit.nx * (hit.overlap + 4);
+        this.wagon.z += hit.nz * (hit.overlap + 4);
         break;
       }
     }
 
-    for (const horse of this.horses) {
-      for (const rock of this.rockField.getCollisionObjects()) {
-        const dx = horse.x - rock.x;
-        const dz = horse.z - rock.z;
-        const distSq = dx * dx + dz * dz;
-        const radSum = this.horseRadius + rock.radius;
+    {
+      const hit = this.testBoxVsBox(
+        wx, wz, wHW, wHL, wor,
+        barnCX, barnCZ, barnHW, barnHL, barnOr
+      );
+      if (hit) {
+        this.wagon.takeDamage(5);
+        this.collisionCooldown = 20;
+        this.wagon.speed = -this.wagon.speed * 0.8 - 3;
+        this.wagon.x += hit.nx * (hit.overlap + 4);
+        this.wagon.z += hit.nz * (hit.overlap + 4);
+      }
+    }
 
-        if (distSq < radSum * radSum) {
+    {
+      const distWorld = Math.sqrt(wx * wx + wz * wz);
+      if (distWorld + this.wagonMaxExtent > this.worldBoundaryRadius) {
+        this.wagon.takeDamage(5);
+        this.collisionCooldown = 20;
+        this.wagon.speed = -this.wagon.speed * 0.8 - 3;
+        const nx = wx / distWorld;
+        const nz = wz / distWorld;
+        const overlap = distWorld + this.wagonMaxExtent - this.worldBoundaryRadius;
+        this.wagon.x -= nx * (overlap + 4);
+        this.wagon.z -= nz * (overlap + 4);
+      }
+    }
+
+    for (const horse of this.horses) {
+      const hx = horse.x;
+      const hz = horse.z;
+      const hor = horse.orientation;
+      const hHW = this.horseHalfWidth;
+      const hHL = this.horseHalfLength;
+
+      for (const rock of this.rockField.getCollisionObjects()) {
+        const hit = this.testBoxVsSphere(hx, hz, hHW, hHL, hor, rock.x, rock.z, rock.radius);
+        if (hit) {
           this.wagon.takeDamage(10);
           this.collisionCooldown = 20;
-
-          const dist = Math.sqrt(distSq);
-          const overlap = radSum - dist;
-          const nx = dx / dist;
-          const nz = dz / dist;
-          this.wagon.x += nx * overlap;
-          this.wagon.z += nz * overlap;
+          this.wagon.speed = -this.wagon.speed * 0.8 - 3;
+          this.wagon.x += hit.nx * (hit.overlap + 4);
+          this.wagon.z += hit.nz * (hit.overlap + 4);
           break;
         }
       }
 
-      const dxBarnH = horse.x - this.barnX;
-      const dzBarnH = horse.z - this.barnZ;
-      const distSqBarnH = dxBarnH * dxBarnH + dzBarnH * dzBarnH;
-      const radSumBarnH = this.horseRadius + this.barnRadius;
-
-      if (distSqBarnH < radSumBarnH * radSumBarnH) {
-        this.wagon.takeDamage(5);
-        this.collisionCooldown = 20;
-
-        const distBarnH = Math.sqrt(distSqBarnH);
-        const overlapBarnH = radSumBarnH - distBarnH;
-        const nxBarnH = dxBarnH / distBarnH;
-        const nzBarnH = dzBarnH / distBarnH;
-        this.wagon.x += nxBarnH * overlapBarnH;
-        this.wagon.z += nzBarnH * overlapBarnH;
+      {
+        const hit = this.testBoxVsBox(
+          hx, hz, hHW, hHL, hor,
+          barnCX, barnCZ, barnHW, barnHL, barnOr
+        );
+        if (hit) {
+          this.wagon.takeDamage(5);
+          this.collisionCooldown = 20;
+          this.wagon.speed = -this.wagon.speed * 0.8 - 3;
+          this.wagon.x += hit.nx * (hit.overlap + 4);
+          this.wagon.z += hit.nz * (hit.overlap + 4);
+        }
       }
 
-      const distWorldH = Math.sqrt(horse.x * horse.x + horse.z * horse.z);
-
-      if (distWorldH + this.horseRadius > this.worldBoundaryRadius) {
-        this.wagon.takeDamage(5);
-        this.collisionCooldown = 20;
-
-        const nxH = horse.x / distWorldH;
-        const nzH = horse.z / distWorldH;
-        const overlapH =
-          distWorldH + this.horseRadius - this.worldBoundaryRadius;
-        this.wagon.x -= nxH * overlapH;
-        this.wagon.z -= nzH * overlapH;
+      {
+        const distWorldH = Math.sqrt(hx * hx + hz * hz);
+        if (distWorldH + this.horseMaxExtent > this.worldBoundaryRadius) {
+          this.wagon.takeDamage(5);
+          this.collisionCooldown = 20;
+          this.wagon.speed = -this.wagon.speed * 0.8 - 3;
+          const nxH = hx / distWorldH;
+          const nzH = hz / distWorldH;
+          const overlapH = distWorldH + this.horseMaxExtent - this.worldBoundaryRadius;
+          this.wagon.x -= nxH * (overlapH + 4);
+          this.wagon.z -= nzH * (overlapH + 4);
+        }
       }
-    }
-
-    const dxBarn = wx - this.barnX;
-    const dzBarn = wz - this.barnZ;
-    const distSqBarn = dxBarn * dxBarn + dzBarn * dzBarn;
-    const radSumBarn = this.wagonRadius + this.barnRadius;
-
-    if (distSqBarn < radSumBarn * radSumBarn) {
-      this.wagon.takeDamage(5);
-      this.collisionCooldown = 20;
-
-      const distBarn = Math.sqrt(distSqBarn);
-      const overlapBarn = radSumBarn - distBarn;
-      const nxBarn = dxBarn / distBarn;
-      const nzBarn = dzBarn / distBarn;
-      this.wagon.x += nxBarn * overlapBarn;
-      this.wagon.z += nzBarn * overlapBarn;
-    }
-
-    const distWorld = Math.sqrt(wx * wx + wz * wz);
-
-    if (distWorld + this.wagonRadius > this.worldBoundaryRadius) {
-      this.wagon.takeDamage(5);
-      this.collisionCooldown = 20;
-
-      const nx = wx / distWorld;
-      const nz = wz / distWorld;
-      const overlap = distWorld + this.wagonRadius - this.worldBoundaryRadius;
-      this.wagon.x -= nx * overlap;
-      this.wagon.z -= nz * overlap;
     }
   }
 
@@ -763,7 +761,7 @@ export class MyScene extends CGFscene {
 
     if (this.displayBaleArea) {
       this.pushMatrix();
-      this.translate(this.barnX, this.barnY - 2, this.barnZ);
+      this.translate(this.baleAreaX, this.baleAreaY, this.baleAreaZ);
       this.rotate(-Math.PI / 2, 1, 0, 0);
       this.scale(this.baleAreaRadius, this.baleAreaRadius, this.baleAreaHeight);
       this.setActiveShader(this.baleAreaShader);
@@ -817,5 +815,41 @@ export class MyScene extends CGFscene {
     }
 
     this.popMatrix();
+  }
+  
+  getOBBAxes(orientation) {
+    return null;
+  }
+
+  testBoxVsSphere(boxX, boxZ, halfWidth, halfLength, orientation, sphereX, sphereZ, sphereRadius) {
+    const dx = boxX - sphereX;
+    const dz = boxZ - sphereZ;
+    const dist = Math.sqrt(dx * dx + dz * dz) || 1;
+    const combinedRadius = Math.max(halfWidth, halfLength) + sphereRadius;
+
+    if (dist < combinedRadius) {
+      return {
+        nx: dx / dist,
+        nz: dz / dist,
+        overlap: combinedRadius - dist
+      };
+    }
+    return null;
+  }
+
+  testBoxVsBox(box1X, box1Z, halfWidth1, halfLength1, orientation1, box2X, box2Z, halfWidth2, halfLength2, orientation2) {
+    const dx = box1X - box2X;
+    const dz = box1Z - box2Z;
+    const dist = Math.sqrt(dx * dx + dz * dz) || 1;
+    const combinedRadius = Math.max(halfWidth1, halfLength1) + Math.max(halfWidth2, halfLength2);
+
+    if (dist < combinedRadius) {
+      return {
+        nx: dx / dist,
+        nz: dz / dist,
+        overlap: combinedRadius - dist
+      };
+    }
+    return null;
   }
 }
