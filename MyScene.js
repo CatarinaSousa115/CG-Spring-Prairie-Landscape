@@ -14,6 +14,7 @@ import { FlowerField } from "./world/Flora/Flowers/FlowerField.js";
 import { Barn } from "./objects/barn/Barn.js";
 import { Cylinder } from "./primitives/Cylinder.js";
 import { HayBale } from "./objects/bale/HayBale.js";
+import { MyUIManager } from "./managers/UIManager.js";
 
 export class MyScene extends CGFscene {
   constructor() {
@@ -250,7 +251,7 @@ export class MyScene extends CGFscene {
     this.hayBales = [];
     this.spawnHayBales(15);
 
-    // COlisao
+    // Colisao
     this.wagonRadius = 1.8;
     this.horseRadius = 1.2;
     this.barnRadius = 8.5;
@@ -258,9 +259,8 @@ export class MyScene extends CGFscene {
 
     this.collisionCooldown = 0;
 
-    // botao HTML
-    const restartBtn = document.getElementById("restart-button");
-    if (restartBtn) restartBtn.onclick = () => this.restartGame();
+    // UI Manager
+    this.uiManager = new MyUIManager(this);
   }
 
   spawnHayBales(num) {
@@ -331,17 +331,12 @@ export class MyScene extends CGFscene {
   }
 
   update(t) {
-    const hpFill = document.getElementById("hp-fill");
-    if (hpFill && this.wagon) {
-      const hpPercent = Math.max(0, (this.wagon.hp / this.wagon.maxHP) * 100);
-      hpFill.style.width = `${hpPercent}%`;
+    if (this.wagon) {
+      const hpPercent = (this.wagon.hp / this.wagon.maxHP) * 100;
+      this.uiManager.updateHP(hpPercent);
     }
 
-    const balesDelivered = document.getElementById("bales-delivered");
-    if (balesDelivered) balesDelivered.innerText = this.deliveryProgress;
-
-    const timeDisplay = document.getElementById("time-display");
-    if (timeDisplay) timeDisplay.innerText = this.gameTime;
+    this.uiManager.updateStats(this.deliveryProgress, this.gameTime);
 
     if (this.gameStatus !== "playing") return;
 
@@ -400,29 +395,7 @@ export class MyScene extends CGFscene {
   endGame(win) {
     this.gameStatus = win ? "won" : "lost";
     if (this.wagon) this.wagon.win = win;
-
-    const overlay = document.getElementById("game-overlay");
-    const title = document.getElementById("status-title");
-    const message = document.getElementById("status-message");
-    const button = document.getElementById("restart-button");
-
-    if (overlay) overlay.style.display = "block";
-    if (win) {
-      if (title) {
-        title.innerText = "YOU WIN!";
-        title.style.color = "#00ff00";
-      }
-      if (message)
-        message.innerText = `Congratulations! All bales delivered in ${this.gameTime}.`;
-      if (button) button.innerText = "PLAY AGAIN";
-    } else {
-      if (title) {
-        title.innerText = "GAME OVER";
-        title.style.color = "#ff0000";
-      }
-      if (message) message.innerText = "Your wagon was destroyed.";
-      if (button) button.innerText = "RETRY";
-    }
+    this.uiManager.showEndGame(win, this.gameTime);
   }
 
   restartGame() {
@@ -442,27 +415,11 @@ export class MyScene extends CGFscene {
     this.hayBales = [];
     this.spawnHayBales(15);
 
-    const overlay = document.getElementById("game-overlay");
-    if (overlay) overlay.style.display = "none";
+    this.uiManager.hideOverlay();
   }
 
   spawnHPPopup(amount, type) {
-    const container = document.getElementById("popup-container");
-    if (!container) return;
-
-    const popup = document.createElement("div");
-    popup.className = `hp-popup ${type}`;
-    popup.innerText = (type === "repair" ? "+" : "-") + amount;
-
-    // Position around the health bar center
-    popup.style.left = "50%";
-    popup.style.top = "80%";
-
-    container.appendChild(popup);
-
-    setTimeout(() => {
-      popup.remove();
-    }, 1200);
+    this.uiManager.spawnHPPopup(amount, type);
   }
 
   updateFollowCamera() {
