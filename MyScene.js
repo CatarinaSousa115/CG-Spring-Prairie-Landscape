@@ -15,6 +15,7 @@ import { Barn } from "./objects/barn/Barn.js";
 import { Cylinder } from "./primitives/Cylinder.js";
 import { HayBale } from "./objects/bale/HayBale.js";
 import { MyUIManager } from "./managers/UIManager.js";
+import { MyCameraManager } from "./managers/CameraManager.js";
 
 export class MyScene extends CGFscene {
   constructor() {
@@ -86,14 +87,6 @@ export class MyScene extends CGFscene {
         lateralOffset: 0.95,
       }),
     ];
-
-    this.cameraFollowHorse = true;
-    this.cameraFollowDistance = 50;
-    this.cameraFollowHeight = 15;
-    this.cameraFollowLookAhead = 3.6;
-    this.cameraFollowSmoothing = 0.16;
-    this.cameraFollowPosition = null;
-    this.cameraFollowTarget = null;
 
     this.grassField = new GrassField(this, {
       terrain: this.terrain,
@@ -266,6 +259,8 @@ export class MyScene extends CGFscene {
 
     this.collisionCooldown = 0;
 
+    // Managers
+    this.cameraManager = new MyCameraManager(this);
     this.uiManager = new MyUIManager(this);
   }
 
@@ -372,7 +367,7 @@ export class MyScene extends CGFscene {
       }
     }
 
-    this.updateFollowCamera();
+    this.cameraManager.update();
 
     if (this.wagonPath.width !== this.lastPathWidth) {
       this.lastPathWidth = this.wagonPath.width;
@@ -427,74 +422,6 @@ export class MyScene extends CGFscene {
     this.uiManager.spawnHPPopup(amount, type);
   }
 
-  updateFollowCamera() {
-    if (!this.cameraFollowHorse || !this.horses?.length || !this.camera) return;
-
-    const horseCenter = this.getHorseTeamCenter();
-    if (!horseCenter) return;
-
-    const orientation = this.wagon?.orientation ?? this.horses[0].orientation ?? 0;
-    const directionX = Math.sin(orientation);
-    const directionZ = Math.cos(orientation);
-    const scale = this.scaleFactor ?? 1;
-
-    const target = [
-      (horseCenter.x + directionX * this.cameraFollowLookAhead) * scale,
-      (horseCenter.y + 1.8) * scale,
-      (horseCenter.z + directionZ * this.cameraFollowLookAhead) * scale,
-    ];
-
-    const position = [
-      (horseCenter.x - directionX * this.cameraFollowDistance) * scale,
-      (horseCenter.y + this.cameraFollowHeight) * scale,
-      (horseCenter.z - directionZ * this.cameraFollowDistance) * scale,
-    ];
-
-    this.cameraFollowPosition = this.lerpCameraPoint(
-      this.cameraFollowPosition,
-      position,
-      this.cameraFollowSmoothing,
-    );
-    this.cameraFollowTarget = this.lerpCameraPoint(
-      this.cameraFollowTarget,
-      target,
-      this.cameraFollowSmoothing,
-    );
-
-    this.camera.setPosition(vec3.fromValues(...this.cameraFollowPosition));
-    this.camera.setTarget(vec3.fromValues(...this.cameraFollowTarget));
-  }
-
-  getHorseTeamCenter() {
-    if (!this.horses?.length) return null;
-
-    let x = 0;
-    let y = 0;
-    let z = 0;
-
-    for (const horse of this.horses) {
-      x += horse.x;
-      y += horse.y;
-      z += horse.z;
-    }
-
-    return {
-      x: x / this.horses.length,
-      y: y / this.horses.length,
-      z: z / this.horses.length,
-    };
-  }
-
-  lerpCameraPoint(current, target, amount) {
-    if (!current) return [...target];
-
-    return [
-      current[0] + (target[0] - current[0]) * amount,
-      current[1] + (target[1] - current[1]) * amount,
-      current[2] + (target[2] - current[2]) * amount,
-    ];
-  }
-
   checkKeys() {
     const pPressed = this.gui.isKeyPressed("KeyP");
     if (pPressed && !this.lastPPressed) {
@@ -507,6 +434,12 @@ export class MyScene extends CGFscene {
       this.dropBale();
     }
     this.lastLPressed = lPressed;
+
+    const cPressed = this.gui.isKeyPressed("KeyC");
+    if (cPressed && !this.lastCPressed) {
+      this.cameraManager.nextCamera();
+    }
+    this.lastCPressed = cPressed;
   }
 
   pickUpBale() {

@@ -10,9 +10,21 @@ export class MyUIManager {
         this.statusMessage = document.getElementById("status-message");
         this.restartButton = document.getElementById("restart-button");
         this.popupContainer = document.getElementById("popup-container");
+        this.notificationArea = document.getElementById("notification-area");
+        this.cameraIcon = document.getElementById("camera-icon");
+        this.cameraModeNumber = document.getElementById("camera-mode-number");
 
         if (this.restartButton) {
             this.restartButton.onclick = () => this.scene.restartGame();
+        }
+
+        if (this.cameraIcon) {
+            this.cameraIcon.style.pointerEvents = "auto";
+            this.cameraIcon.onclick = () => {
+                if (this.scene.cameraManager) {
+                    this.scene.cameraManager.nextCamera();
+                }
+            };
         }
     }
 
@@ -25,6 +37,12 @@ export class MyUIManager {
     updateStats(progress, time) {
         if (this.balesDelivered) this.balesDelivered.innerText = progress;
         if (this.timeDisplay) this.timeDisplay.innerText = time;
+    }
+
+    updateCameraMode(modeIndex) {
+        if (this.cameraModeNumber) {
+            this.cameraModeNumber.innerText = modeIndex;
+        }
     }
 
     showEndGame(win, gameTime) {
@@ -69,5 +87,17 @@ export class MyUIManager {
         this.popupContainer.appendChild(popup);
 
         setTimeout(() => popup.remove(), 1200);
+    }
+
+    showNotification(message, duration = 3000) {
+        if (!this.notificationArea) return;
+
+        const notification = document.createElement("div");
+        notification.className = "notification";
+        notification.innerText = message;
+
+        this.notificationArea.appendChild(notification);
+
+        setTimeout(() => notification.remove(), duration);
     }
 }
