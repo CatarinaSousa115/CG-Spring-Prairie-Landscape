@@ -1,5 +1,5 @@
 import { CGFappearance, CGFtexture } from "../../lib/CGF.js";
-import { PathRibbon } from "../primitives/PathRibbon.js";
+import { PathRibbon } from "./PathRibbon.js";
 
 export class WagonPath {
   constructor(scene, terrain, options = {}) {

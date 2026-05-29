@@ -1,5 +1,5 @@
 import { CGFobject, CGFappearance, CGFshader } from "../../../../lib/CGF.js";
-import { GrassBlade } from "../../../primitives/GrassBlade.js";
+import { GrassBlade } from "./GrassBlade.js";
 
 export class GrassField extends CGFobject {
   constructor(scene, options = {}) {

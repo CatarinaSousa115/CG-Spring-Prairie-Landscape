@@ -1,5 +1,5 @@
-import { CGFappearance, CGFtexture } from "../../lib/CGF.js";
-import { PerturbedRock } from "../primitives/PerturbedRock.js";
+import { CGFappearance, CGFtexture } from "../../../lib/CGF.js";
+import { PerturbedRock } from "./PerturbedRock.js";
 
 export class RockField {
   constructor(scene, terrain, options = {}) {

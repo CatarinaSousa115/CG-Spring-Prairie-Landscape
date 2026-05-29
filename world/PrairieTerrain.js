@@ -1,5 +1,5 @@
 import { CGFappearance, CGFtexture } from "../../lib/CGF.js";
-import { CircularTerrainMesh } from "../primitives/CircularTerrainMesh.js";
+import { CircularTerrainMesh } from "./CircularTerrainMesh.js";
 
 export class PrairieTerrain {
   constructor(scene, options = {}) {

@@ -1,6 +1,6 @@
 import { CGFobject, CGFappearance } from "../../../lib/CGF.js";
 import { Box } from "../../primitives/Box.js";
-import { PinpointArrow } from "./PinpointArrow.js";
+import { PinpointArrow } from "../ui/PinpointArrow.js";
 
 export class HayBale extends CGFobject {
   constructor(scene, terrain = null, texture = null) {

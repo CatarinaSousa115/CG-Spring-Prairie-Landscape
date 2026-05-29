@@ -1,5 +1,5 @@
 import { CGFappearance, CGFtexture } from "../../../lib/CGF.js";
-import { ObjModel } from "../../primitives/ObjModel.js";
+import { ObjModel } from "../../models/ObjModel.js";
 
 export class Horse {
     constructor(scene, terrain = null, options = {}) {
