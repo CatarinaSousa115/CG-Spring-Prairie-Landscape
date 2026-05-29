@@ -30,8 +30,6 @@ export class MyCameraManager {
         if (this.scene.uiManager) {
             this.scene.uiManager.updateCameraMode(nextIndex + 1);
         }
-
-        console.log("Switched to camera mode: " + this.mode);
     }
 
     manualMode() {

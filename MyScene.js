@@ -549,7 +549,7 @@ export class MyScene extends CGFscene {
       const worldOffsetX = localX * cosR + localZ * sinR;
       const worldOffsetZ = -localX * sinR + localZ * cosR;
 
-      bale.setPosition(this.barnX + worldOffsetX, this.barnZ + worldOffsetZ);
+      bale.setPosition(this.barnX + worldOffsetX, this.barnZ + worldOffsetZ + 9 );
       bale.y = this.barnY + localY;
       bale.rotation = this.barnRotation;
     } else {
@@ -785,10 +785,6 @@ export class MyScene extends CGFscene {
     }
 
     this.popMatrix();
-  }
-  
-  getOBBAxes(orientation) {
-    return null;
   }
 
   testBoxVsSphere(boxX, boxZ, halfWidth, halfLength, orientation, sphereX, sphereZ, sphereRadius) {
