@@ -34,7 +34,7 @@ export class Barn extends CGFobject {
 
     if (this.doorMat) {
       this.scene.pushMatrix();
-      this.scene.translate(0, 1.9, 3.52);
+      this.scene.translate(0, 1.3, 3.52);
       this.scene.scale(2.0, 2.5, 1);
       this.doorMat.apply();
       this.quad.display();
@@ -68,7 +68,7 @@ export class Barn extends CGFobject {
 
       if (this.logoMat) {
       this.scene.pushMatrix();
-      this.scene.translate(0, 3.7, 3.57);
+      this.scene.translate(0, 3.5, 3.57);
       this.scene.scale(1.8, 0.9, 1);
       this.logoMat.apply();
       this.quad.display();

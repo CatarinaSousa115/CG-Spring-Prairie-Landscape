@@ -100,7 +100,7 @@ export class MyScene extends CGFscene {
       windStrength: 0.18,
     });
 
-    const tBarn = 0.68;
+    const tBarn = 0.895;
     const p0 = this.wagonPath.getPoint(tBarn);
     const p1 = this.wagonPath.getPoint(tBarn + 0.01);
 
@@ -113,14 +113,14 @@ export class MyScene extends CGFscene {
     const normalX = -tangentZ / pathSegmentLength;
     const normalZ = tangentX / pathSegmentLength;
 
-    const barnSideOffset = 9.5;
+    const barnSideOffset = 0.6;
     this.barnX = p0[0] + normalX * barnSideOffset;
     this.barnZ = p0[1] + normalZ * barnSideOffset;
     this.barnY = this.terrain.getHeightAt(this.barnX, this.barnZ);
 
-    this.barnRotation = Math.atan2(-normalX, -normalZ);
+    this.barnRotation = Math.atan2(-normalX, -normalZ) + Math.PI/2;
 
-    const baleSideOffset = 4.5;
+    const baleSideOffset = 0.6;
     this.baleAreaX = p0[0] + normalX * baleSideOffset;
     this.baleAreaZ = p0[1] + normalZ * baleSideOffset;
     this.baleAreaY =
@@ -512,8 +512,8 @@ export class MyScene extends CGFscene {
       const worldOffsetX = localX * cosR + localZ * sinR;
       const worldOffsetZ = -localX * sinR + localZ * cosR;
 
-      bale.setPosition(this.barnX - 5 + worldOffsetX, this.barnZ + worldOffsetZ);
-      bale.y = this.barnY - 2 + localY;
+      bale.setPosition(this.barnX + worldOffsetX, this.barnZ + worldOffsetZ);
+      bale.y = this.barnY + localY;
       bale.rotation = this.barnRotation;
     } else {
       const angle = this.wagon.orientation;
@@ -541,8 +541,8 @@ export class MyScene extends CGFscene {
     const wHW = this.wagonHalfWidth;
     const wHL = this.wagonHalfLength;
 
-    const barnCX = this.barnX - 5;
-    const barnCZ = this.barnZ;
+    const barnCX = this.barnX;
+    const barnCZ = this.barnZ + 9;
     const barnHW = this.barnHalfWidth;
     const barnHL = this.barnHalfLength;
     const barnOr = this.barnRotation;
@@ -710,7 +710,7 @@ export class MyScene extends CGFscene {
 
     if (this.displayBarn) {
       this.pushMatrix();
-      this.translate(this.barnX - 5, this.barnY - 2, this.barnZ);
+      this.translate(this.barnX, this.barnY, this.barnZ + 9);
       this.scale(2.5, 2.5, 2.5);
       this.rotate(this.barnRotation, 0, 1, 0);
       this.barn.display();
