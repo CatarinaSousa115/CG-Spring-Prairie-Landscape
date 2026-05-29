@@ -44,18 +44,61 @@ export class MyCameraManager {
     }
 
     update() {
-        if (this.mode === 'Manual' || !this.scene.horses?.length || !this.scene.camera) return;
+        if (!this.scene.camera) return;
 
-        const center = this.getHorseTeamCenter();
-        if (!center) return;
+        if (this.mode !== 'Manual' && this.scene.horses?.length) {
+            const center = this.getHorseTeamCenter();
+            if (center) {
+                const { target, position } = this.camera(center);
 
-        const { target, position } = this.camera(center);
+                this.followPosition = this.lerpCameraPoint(this.followPosition, position, this.followSmoothing);
+                this.followTarget = this.lerpCameraPoint(this.followTarget, target, this.followSmoothing);
 
-        this.followPosition = this.lerpCameraPoint(this.followPosition, position, this.followSmoothing);
-        this.followTarget = this.lerpCameraPoint(this.followTarget, target, this.followSmoothing);
+                this.scene.camera.setPosition(vec3.fromValues(...this.followPosition));
+                this.scene.camera.setTarget(vec3.fromValues(...this.followTarget));
+            }
+        }
 
-        this.scene.camera.setPosition(vec3.fromValues(...this.followPosition));
-        this.scene.camera.setTarget(vec3.fromValues(...this.followTarget));
+        this.applyConstraints();
+    }
+
+    applyConstraints() {
+        if (!this.scene.camera || !this.scene.skyDome) return;
+
+        const radius = (this.scene.skyDome.radius - 1) * (this.scene.scaleFactor ?? 1);
+        const pos = this.scene.camera.position;
+        const dist = Math.sqrt(pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2]);
+        
+        let newX = pos[0];
+        let newY = pos[1];
+        let newZ = pos[2];
+        let changed = false;
+
+        if (dist > radius) {
+            const factor = radius / dist;
+            newX *= factor;
+            newY *= factor;
+            newZ *= factor;
+            changed = true;
+        }
+
+        if (this.scene.terrain) {
+            const localX = newX / (this.scene.scaleFactor ?? 1);
+            const localZ = newZ / (this.scene.scaleFactor ?? 1);
+            const terrainY = this.scene.terrain.getHeightAt(localX, localZ) * (this.scene.scaleFactor ?? 1);
+            
+            if (newY < terrainY + 1.0) {
+                newY = terrainY + 1.0;
+                changed = true;
+            }
+        }
+
+        if (changed) {
+            this.scene.camera.setPosition(vec3.fromValues(newX, newY, newZ));
+            if (this.mode === 'Manual') {
+                this.followPosition = [newX, newY, newZ];
+            }
+        }
     }
 
     camera(center) {

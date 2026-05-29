@@ -1,21 +1,14 @@
-import { CGFscene, CGFcamera, CGFaxis, CGFtexture, CGFappearance, CGFshader } from "../lib/CGF.js";
-import { SkyDome } from "./world/SkyDome.js";
-import { PrairieTerrain } from "./world/PrairieTerrain.js";
-import { Sun } from "./world/Sun.js";
-import { CloudLayer } from "./world/CloudLayer.js";
-import { DirtPatchLayer } from "./world/DirtPatchLayer.js";
-import { WagonPath } from "./world/WagonPath.js";
-import { RockField } from "./world/rocks/RockField.js";
+import { CGFscene, CGFcamera, CGFaxis, CGFtexture, CGFappearance } from "../lib/CGF.js";
 import { Wagon } from "./objects/wagon/Wagon.js";
 import { Horse } from "./objects/horse/Horse.js";
 import { ObjModel } from "./models/ObjModel.js";
-import { GrassField } from "./world/flora/grass/GrassField.js";
-import { FlowerField } from "./world/flora/flowers/FlowerField.js";
-import { Barn } from "./objects/barn/Barn.js";
-import { Cylinder } from "./primitives/Cylinder.js";
-import { HayBale } from "./objects/bale/HayBale.js";
 import { MyUIManager } from "./managers/UIManager.js";
 import { MyCameraManager } from "./managers/CameraManager.js";
+import { BaleManager } from "./managers/BaleManager.js";
+import { CollisionManager } from "./managers/CollisionManager.js";
+import { GameStateManager } from "./managers/GameStateManager.js";
+import { EnvironmentManager } from "./managers/EnvironmentManager.js";
+import { BarnManager } from "./managers/BarnManager.js";
 
 export class MyScene extends CGFscene {
   constructor() {
@@ -38,170 +31,29 @@ export class MyScene extends CGFscene {
     this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
 
     this.axis = new CGFaxis(this);
-    this.skyDome = new SkyDome(this, {
-      radius: 100,
-      slices: 48,
-      stacks: 24,
-      followCamera: false,
-    });
-    this.terrain = new PrairieTerrain(this, {
-      radius: this.skyDome.radius,
-      subdivisions: 40,
-      elevation: 3.2,
-      hillScale: 0.85,
-      height: 0,
-      followCamera: false,
-      texturePath: "textures/prairie.png",
-      textureTiling: 25,
-    });
-
-    this.sun = new Sun(this, {
-      radius: 82,
-      sunSize: 7,
-    });
-    this.cloudLayer = new CloudLayer(this, {
-      orbitRadius: 72,
-      height: 15,
-      brightness: 0.72,
-      followCamera: false,
-    });
-
-    this.dirtPatchLayer = new DirtPatchLayer(this, this.terrain);
-    this.wagonPath = new WagonPath(this, this.terrain);
-    this.rockField = new RockField(this, this.terrain);
-    this.wagon = new Wagon(this, this.terrain);
+    
+    // Managers
+    this.environmentManager = new EnvironmentManager(this);
+    this.barnManager = new BarnManager(this);
+    
+    this.wagon = new Wagon(this, this.environmentManager.terrain);
     this.wagon.x = 0;
     this.wagon.z = 0;
 
     this.horseModel = new ObjModel(this, "models/horse/horse.obj");
     this.horseTexture = new CGFtexture(this, "models/horse/Horse_v01.jpg");
     this.horses = [
-      new Horse(this, this.terrain, {
+      new Horse(this, this.environmentManager.terrain, {
         model: this.horseModel,
         texture: this.horseTexture,
         lateralOffset: -0.95,
       }),
-      new Horse(this, this.terrain, {
+      new Horse(this, this.environmentManager.terrain, {
         model: this.horseModel,
         texture: this.horseTexture,
         lateralOffset: 0.95,
       }),
     ];
-
-    this.grassField = new GrassField(this, {
-      terrain: this.terrain,
-      wagonPath: this.wagonPath,
-      rockField: this.rockField,
-      dirtLayer: this.dirtPatchLayer,
-      numBlades: 12000,
-      areaRadius: 100,
-      deadRatio: 0.25,
-      windSpeed: 1.2,
-      windStrength: 0.18,
-    });
-
-    const tBarn = 0.895;
-    const p0 = this.wagonPath.getPoint(tBarn);
-    const p1 = this.wagonPath.getPoint(tBarn + 0.01);
-
-    const tangentX = p1[0] - p0[0];
-    const tangentZ = p1[1] - p0[1];
-    const pathSegmentLength = Math.sqrt(
-      tangentX * tangentX + tangentZ * tangentZ,
-    );
-
-    const normalX = -tangentZ / pathSegmentLength;
-    const normalZ = tangentX / pathSegmentLength;
-
-    const barnSideOffset = 0.6;
-    this.barnX = p0[0] + normalX * barnSideOffset;
-    this.barnZ = p0[1] + normalZ * barnSideOffset;
-    this.barnY = this.terrain.getHeightAt(this.barnX, this.barnZ);
-
-    this.barnRotation = Math.atan2(-normalX, -normalZ) + Math.PI/2;
-
-    const baleSideOffset = 0.6;
-    this.baleAreaX = p0[0] + normalX * baleSideOffset;
-    this.baleAreaZ = p0[1] + normalZ * baleSideOffset;
-    this.baleAreaY =
-      this.terrain.getHeightAt(this.baleAreaX, this.baleAreaZ) + 0.02;
-
-    this.baleAreaRadius = 20;
-    this.baleAreaHeight = 4;
-    this.wagonIntersecting = false;
-
-    this.barnWallTexture = new CGFtexture(this, "textures/barn_wall.png");
-    this.barnRoofTexture = new CGFtexture(this, "textures/barn_roof.png");
-    this.barnDoorTexture = new CGFtexture(this, "textures/barn_door.png");
-    this.barnWindowTexture = new CGFtexture(this, "textures/barn_window.png");
-    this.hayBaleTexture = new CGFtexture(this, "textures/hay_bale.png");
-    this.barnLogoTexture = new CGFtexture(this, "textures/cat_logo.png");
-
-    this.barnWallMaterial = new CGFappearance(this);
-    this.barnWallMaterial.setAmbient(0.08, 0.06, 0.05, 1.0);
-    this.barnWallMaterial.setDiffuse(0.22, 0.12, 0.09, 1.0);
-    this.barnWallMaterial.setSpecular(0.02, 0.02, 0.02, 1.0);
-    this.barnWallMaterial.setShininess(1.0);
-    this.barnWallMaterial.setTexture(this.barnWallTexture);
-
-    this.barnLogoMaterial = new CGFappearance(this);
-    this.barnLogoMaterial.setAmbient(1.0, 1.0, 1.0, 1.0);
-    this.barnLogoMaterial.setDiffuse(1.0, 1.0, 1.0, 1.0);
-    this.barnLogoMaterial.setSpecular(0.1, 0.1, 0.1, 1.0);
-    this.barnLogoMaterial.setShininess(1.0);
-    this.barnLogoMaterial.setTexture(this.barnLogoTexture);
-    this.barnLogoMaterial.setTextureWrap("CLAMP_TO_EDGE", "CLAMP_TO_EDGE");
-
-    this.barnRoofMaterial = new CGFappearance(this);
-    this.barnRoofMaterial.setAmbient(0.12, 0.12, 0.12, 1.0);
-    this.barnRoofMaterial.setDiffuse(0.25, 0.25, 0.25, 1.0);
-    this.barnRoofMaterial.setSpecular(0.03, 0.03, 0.03, 1.0);
-    this.barnRoofMaterial.setShininess(3.0);
-    this.barnRoofMaterial.setTexture(this.barnRoofTexture);
-
-    this.barnDoorMaterial = new CGFappearance(this);
-    this.barnDoorMaterial.setAmbient(0.25, 0.18, 0.14, 1.0);
-    this.barnDoorMaterial.setDiffuse(0.45, 0.32, 0.24, 1.0);
-    this.barnDoorMaterial.setSpecular(0.02, 0.02, 0.02, 1.0);
-    this.barnDoorMaterial.setShininess(2.0);
-    this.barnDoorMaterial.setTexture(this.barnDoorTexture);
-
-    this.barnWindowMaterial = new CGFappearance(this);
-    this.barnWindowMaterial.setAmbient(0.75, 0.75, 0.75, 1.0);
-    this.barnWindowMaterial.setDiffuse(0.95, 0.95, 0.95, 1.0);
-    this.barnWindowMaterial.setSpecular(0.15, 0.15, 0.15, 1.0);
-    this.barnWindowMaterial.setShininess(10.0);
-    this.barnWindowMaterial.setTexture(this.barnWindowTexture);
-
-    this.baleNormalMat = new CGFappearance(this);
-    this.baleNormalMat.setAmbient(1, 1, 1, 0.1);
-    this.baleNormalMat.setDiffuse(0.8, 0.7, 0.0, 0.1);
-    this.baleNormalMat.setSpecular(0.1, 0.1, 0.0, 0.1);
-    this.baleNormalMat.setShininess(1);
-
-    this.baleActiveMat = new CGFappearance(this);
-    this.baleActiveMat.setAmbient(0.0, 0.9, 0.1, 0.15);
-    this.baleActiveMat.setDiffuse(0.0, 0.9, 0.1, 0.15);
-    this.baleActiveMat.setSpecular(0.0, 0.1, 0.0, 0.15);
-    this.baleActiveMat.setShininess(5);
-
-    this.barn = new Barn(
-      this,
-      this.barnWallMaterial,
-      this.barnRoofMaterial,
-      this.barnDoorMaterial,
-      this.barnWindowMaterial,
-      this.barnLogoMaterial
-    );
-
-    this.baleArea = new Cylinder(this, 40, 1);
-    this.baleAreaShader = new CGFshader(
-      this.gl,
-      "shaders/area.vert",
-      "shaders/area.frag",
-    );
-    this.baleAreaNormalColor = [1.0, 0.929, 0.161, 0.75];
-    this.baleAreaActiveColor = [0.0, 1.0, 0.0, 0.75];
 
     this.initLights();
     this.setUpdatePeriod(50);
@@ -226,69 +78,14 @@ export class MyScene extends CGFscene {
     this.sunLightEnabled = true;
     this.scaleFactor = 2.0;
     this.sunAngle = 0;
-    this.time = 0;
-    this.startTime = undefined;
-    this.gameStatus = "playing";
-
-    this.lastPathWidth = this.wagonPath.width;
-    this.flowerField = new FlowerField(
-      this,
-      350,
-      100,
-      this.terrain,
-      this.wagonPath,
-      0,
-      0,
-    );
-
-    this.hayBales = [];
-    this.spawnHayBales(15);
-
-    this.wagonRadius = 1.8;
-    this.wagonHalfWidth = 1.5;
-    this.wagonHalfLength = 2.9;
-    this.wagonMaxExtent = Math.sqrt(this.wagonHalfWidth ** 2 + this.wagonHalfLength ** 2);
-
-    this.horseHalfWidth = 0.42;
-    this.horseHalfLength = 1.35;
-    this.horseMaxExtent = Math.sqrt(this.horseHalfWidth ** 2 + this.horseHalfLength ** 2);
-
-    this.barnHalfWidth = 6.25;
-    this.barnHalfLength = 8.75;
-    this.worldBoundaryRadius = 98;
-
-    this.collisionCooldown = 0;
 
     // Managers
     this.cameraManager = new MyCameraManager(this);
     this.uiManager = new MyUIManager(this);
-  }
-
-  spawnHayBales(num) {
-    const radius = 80;
-    const pathMargin = this.wagonPath.width / 2 + 3;
-    const rockMargin = 4;
-    let attempts = 0;
-    const maxAttempts = num * 50;
-
-    while (this.hayBales.length < num && attempts < maxAttempts) {
-      attempts++;
-      const angle = Math.random() * Math.PI * 2;
-      const dist = Math.sqrt(Math.random()) * radius;
-      const x = dist * Math.cos(angle);
-      const z = dist * Math.sin(angle);
-
-      if (this.wagonPath.isNearPath(x, z, pathMargin)) continue;
-      if (this.rockField.isNearRock(x, z, rockMargin)) continue;
-
-      const dx = x - this.barnX;
-      const dz = z - this.barnZ;
-      if (Math.sqrt(dx * dx + dz * dz) < this.baleAreaRadius) continue;
-
-      const bale = new HayBale(this, this.terrain, this.hayBaleTexture);
-      bale.setPosition(x, z);
-      this.hayBales.push(bale);
-    }
+    this.collisionManager = new CollisionManager(this);
+    this.baleManager = new BaleManager(this);
+    this.baleManager.init();
+    this.gameStateManager = new GameStateManager(this);
   }
 
   initLights() {
@@ -299,25 +96,6 @@ export class MyScene extends CGFscene {
     this.lights[0].setSpecular(0.6, 0.52, 0.38, 1.0);
     this.lights[0].enable();
     this.lights[0].setVisible(true);
-  }
-
-  updateSunLight() {
-    if (!this.sunLightEnabled) {
-      this.lights[0].disable();
-      this.lights[0].update();
-      return;
-    }
-
-    const sunPosition = this.sun.getScenePosition();
-
-    this.lights[0].enable();
-    this.lights[0].setPosition(
-      sunPosition[0],
-      sunPosition[1],
-      sunPosition[2],
-      1.0,
-    );
-    this.lights[0].update();
   }
 
   initCameras() {
@@ -338,27 +116,17 @@ export class MyScene extends CGFscene {
 
     this.uiManager.updateStats(this.deliveryProgress, this.gameTime);
 
+    this.gameStateManager.update(t);
     if (this.gameStatus !== "playing") return;
 
-    if (this.startTime === undefined) this.startTime = t;
-
-    this.time = (t - this.startTime) * 0.001;
-
-    this.cloudLayer.update(t);
+    this.environmentManager.update(t);
 
     if (this.wagon) {
       this.wagon.update(t);
-      this.checkCollision();
-
-      const dx = this.wagon.x - this.barnX;
-      const dz = this.wagon.z - this.barnZ;
-      const distance = Math.sqrt(dx * dx + dz * dz);
-
-      this.wagonIntersecting =
-        distance < this.baleAreaRadius + this.wagonRadius;
+      this.collisionManager.update(t);
+      this.baleManager.update(t);
 
       this.checkKeys();
-      this.checkGameStatus();
     }
 
     if (this.horses && this.wagon) {
@@ -368,91 +136,10 @@ export class MyScene extends CGFscene {
     }
 
     this.cameraManager.update();
-
-    if (this.wagonPath.width !== this.lastPathWidth) {
-      this.lastPathWidth = this.wagonPath.width;
-      this.grassField.rebuild();
-    }
-
-    if (this.camera && this.skyDome) {
-      const radius = (this.skyDome.radius - 1) * this.scaleFactor;
-      const pos = this.camera.position;
-      const dist = Math.sqrt(pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2]);
-      
-      let newX = pos[0];
-      let newY = pos[1];
-      let newZ = pos[2];
-      let changed = false;
-
-      if (dist > radius) {
-        const factor = radius / dist;
-        newX *= factor;
-        newY *= factor;
-        newZ *= factor;
-        changed = true;
-      }
-
-      if (this.terrain) {
-        const localX = newX / this.scaleFactor;
-        const localZ = newZ / this.scaleFactor;
-        const terrainY = this.terrain.getHeightAt(localX, localZ) * this.scaleFactor;
-        
-        if (newY < terrainY + 1.0) {
-          newY = terrainY + 1.0;
-          changed = true;
-        }
-      }
-
-      if (changed) {
-        this.camera.setPosition(vec3.fromValues(newX, newY, newZ));
-        if (this.cameraManager.mode === 'Manual') {
-            this.cameraManager.followPosition = [newX, newY, newZ];
-        }
-      }
-    }
-  }
-
-  checkGameStatus() {
-    if (this.wagon.isDead) {
-      this.endGame(false);
-      return;
-    }
-
-    if (this.wagon.win) {
-      this.endGame(true);
-      return;
-    }
-
-    const deliveredCount = this.hayBales.filter((b) => b.isDelivered).length;
-    if (deliveredCount === this.hayBales.length && this.hayBales.length > 0) {
-      this.endGame(true);
-    }
-  }
-
-  endGame(win) {
-    this.gameStatus = win ? "won" : "lost";
-    if (this.wagon) this.wagon.win = win;
-    this.uiManager.showEndGame(win, this.gameTime);
   }
 
   restartGame() {
-    this.gameStatus = "playing";
-    this.startTime = undefined;
-    this.time = 0;
-
-    this.wagon.hp = this.wagon.maxHP;
-    this.wagon.isDead = false;
-    this.wagon.win = false;
-    this.wagon.x = 0;
-    this.wagon.z = 0;
-    this.wagon.speed = 0;
-    this.wagon.orientation = 0;
-    this.wagon.carriedBales = [];
-
-    this.hayBales = [];
-    this.spawnHayBales(15);
-
-    this.uiManager.hideOverlay();
+    this.gameStateManager.restartGame();
   }
 
   spawnHPPopup(amount, type) {
@@ -462,13 +149,13 @@ export class MyScene extends CGFscene {
   checkKeys() {
     const pPressed = this.gui.isKeyPressed("KeyP");
     if (pPressed && !this.lastPPressed) {
-      this.pickUpBale();
+      this.baleManager.pickUpBale();
     }
     this.lastPPressed = pPressed;
 
     const lPressed = this.gui.isKeyPressed("KeyL");
     if (lPressed && !this.lastLPressed) {
-      this.dropBale();
+      this.baleManager.dropBale();
     }
     this.lastLPressed = lPressed;
 
@@ -479,198 +166,26 @@ export class MyScene extends CGFscene {
     this.lastCPressed = cPressed;
   }
 
-  pickUpBale() {
-    if (this.wagon.carriedBales.length >= this.wagon.maxBales) return;
-
-    let nearestBale = null;
-    let minDistance = 10.0;
-
-    for (const bale of this.hayBales) {
-      if (bale.isPickedUp || bale.isDelivered) continue;
-
-      const dx = bale.x - this.wagon.x;
-      const dz = bale.z - this.wagon.z;
-      const dist = Math.sqrt(dx * dx + dz * dz);
-
-      if (dist < minDistance) {
-        minDistance = dist;
-        nearestBale = bale;
-      }
-    }
-
-    if (nearestBale) {
-      nearestBale.isPickedUp = true;
-      this.wagon.carriedBales.push(nearestBale);
-    }
-  }
-
   get deliveryProgress() {
-    const delivered = this.hayBales.filter((b) => b.isDelivered).length;
-    return `${delivered}/${this.hayBales.length}`;
+    return this.baleManager.deliveryProgress;
   }
   set deliveryProgress(val) { }
 
   get isWon() {
-    return this.gameStatus === "won";
+    return this.gameStateManager.isWon;
   }
   set isWon(val) { }
 
   get gameTime() {
-    const mins = Math.floor(this.time / 60);
-    const secs = Math.floor(this.time % 60);
-    return `${mins.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
+    return this.gameStateManager.gameTime;
   }
   set gameTime(val) { }
 
-  dropBale() {
-    if (this.wagon.carriedBales.length === 0) return;
-
-    const bale = this.wagon.carriedBales.pop();
-    bale.isPickedUp = false;
-
-    if (this.wagonIntersecting) {
-      bale.isDelivered = true;
-      this.wagon.repair(15);
-      const deliveredCount =
-        this.hayBales.filter((b) => b.isDelivered).length - 1;
-
-      const balesPerLayer = 4;
-      const layer = Math.floor(deliveredCount / balesPerLayer);
-      const indexInLayer = deliveredCount % balesPerLayer;
-
-      const localX = 0;
-      const localZ = -2.25 + indexInLayer * 1.5;
-      const localY = layer * 1.5;
-      const cosR = Math.cos(this.barnRotation);
-      const sinR = Math.sin(this.barnRotation);
-
-      const worldOffsetX = localX * cosR + localZ * sinR;
-      const worldOffsetZ = -localX * sinR + localZ * cosR;
-
-      bale.setPosition(this.barnX + worldOffsetX, this.barnZ + worldOffsetZ + 9 );
-      bale.y = this.barnY + localY;
-      bale.rotation = this.barnRotation;
-    } else {
-      const angle = this.wagon.orientation;
-      const rightX = Math.cos(angle);
-      const rightZ = -Math.sin(angle);
-
-      const offset = 3.0;
-      const dropX = this.wagon.x + rightX * offset;
-      const dropZ = this.wagon.z + rightZ * offset;
-
-      bale.setPosition(dropX, dropZ);
-      bale.rotation = angle;
-    }
+  get gameStatus() {
+    return this.gameStateManager.gameStatus;
   }
-
-  checkCollision() {
-    if (this.collisionCooldown > 0) {
-      this.collisionCooldown--;
-      return;
-    }
-
-    const wx = this.wagon.x;
-    const wz = this.wagon.z;
-    const wor = this.wagon.orientation;
-    const wHW = this.wagonHalfWidth;
-    const wHL = this.wagonHalfLength;
-
-    const barnCX = this.barnX;
-    const barnCZ = this.barnZ + 9;
-    const barnHW = this.barnHalfWidth;
-    const barnHL = this.barnHalfLength;
-    const barnOr = this.barnRotation;
-
-    for (const rock of this.rockField.getCollisionObjects()) {
-      const hit = this.testBoxVsSphere(wx, wz, wHW, wHL, wor, rock.x, rock.z, rock.radius);
-      if (hit) {
-        this.wagon.takeDamage(10);
-        this.collisionCooldown = 20;
-        this.wagon.speed = -this.wagon.speed * 0.8 - 3;
-        this.wagon.x += hit.nx * (hit.overlap + 4);
-        this.wagon.z += hit.nz * (hit.overlap + 4);
-        break;
-      }
-    }
-
-    {
-      const hit = this.testBoxVsBox(
-        wx, wz, wHW, wHL, wor,
-        barnCX, barnCZ, barnHW, barnHL, barnOr
-      );
-      if (hit) {
-        this.wagon.takeDamage(5);
-        this.collisionCooldown = 20;
-        this.wagon.speed = -this.wagon.speed * 0.8 - 3;
-        this.wagon.x += hit.nx * (hit.overlap + 4);
-        this.wagon.z += hit.nz * (hit.overlap + 4);
-      }
-    }
-
-    {
-      const distWorld = Math.sqrt(wx * wx + wz * wz);
-      if (distWorld + this.wagonMaxExtent > this.worldBoundaryRadius) {
-        this.wagon.takeDamage(5);
-        this.collisionCooldown = 20;
-        this.wagon.speed = -this.wagon.speed * 0.8 - 3;
-        const nx = wx / distWorld;
-        const nz = wz / distWorld;
-        const overlap = distWorld + this.wagonMaxExtent - this.worldBoundaryRadius;
-        this.wagon.x -= nx * (overlap + 4);
-        this.wagon.z -= nz * (overlap + 4);
-      }
-    }
-
-    for (const horse of this.horses) {
-      const hx = horse.x;
-      const hz = horse.z;
-      const hor = horse.orientation;
-      const hHW = this.horseHalfWidth;
-      const hHL = this.horseHalfLength;
-
-      for (const rock of this.rockField.getCollisionObjects()) {
-        const hit = this.testBoxVsSphere(hx, hz, hHW, hHL, hor, rock.x, rock.z, rock.radius);
-        if (hit) {
-          this.wagon.takeDamage(10);
-          this.collisionCooldown = 20;
-          this.wagon.speed = -this.wagon.speed * 0.8 - 3;
-          this.wagon.x += hit.nx * (hit.overlap + 4);
-          this.wagon.z += hit.nz * (hit.overlap + 4);
-          break;
-        }
-      }
-
-      {
-        const hit = this.testBoxVsBox(
-          hx, hz, hHW, hHL, hor,
-          barnCX, barnCZ, barnHW, barnHL, barnOr
-        );
-        if (hit) {
-          this.wagon.takeDamage(5);
-          this.collisionCooldown = 20;
-          this.wagon.speed = -this.wagon.speed * 0.8 - 3;
-          this.wagon.x += hit.nx * (hit.overlap + 4);
-          this.wagon.z += hit.nz * (hit.overlap + 4);
-        }
-      }
-
-      {
-        const distWorldH = Math.sqrt(hx * hx + hz * hz);
-        if (distWorldH + this.horseMaxExtent > this.worldBoundaryRadius) {
-          this.wagon.takeDamage(5);
-          this.collisionCooldown = 20;
-          this.wagon.speed = -this.wagon.speed * 0.8 - 3;
-          const nxH = hx / distWorldH;
-          const nzH = hz / distWorldH;
-          const overlapH = distWorldH + this.horseMaxExtent - this.worldBoundaryRadius;
-          this.wagon.x -= nxH * (overlapH + 4);
-          this.wagon.z -= nzH * (overlapH + 4);
-        }
-      }
-    }
+  set gameStatus(val) {
+    if (this.gameStateManager) this.gameStateManager.gameStatus = val;
   }
 
   display() {
@@ -687,72 +202,12 @@ export class MyScene extends CGFscene {
 
     this.pushMatrix();
     this.scale(this.scaleFactor, this.scaleFactor, this.scaleFactor);
-    this.updateSunLight();
+    
+    this.environmentManager.display();
 
-    if (this.displaySky) {
-      if (this.displayNormals) this.skyDome.enableNormalViz();
-      else this.skyDome.disableNormalViz();
-      this.skyDome.display();
-    }
+    this.baleManager.display();
 
-    if (this.displayClouds) {
-      if (this.displayNormals) this.cloudLayer.enableNormalViz();
-      else this.cloudLayer.disableNormalViz();
-      this.cloudLayer.display();
-    }
-
-    if (this.displayTerrain) {
-      if (this.displayNormals) this.terrain.enableNormalViz();
-      else this.terrain.disableNormalViz();
-      this.terrain.display();
-    }
-
-    if (this.displayDirtPatches) {
-      if (this.displayNormals) this.dirtPatchLayer.enableNormalViz();
-      else this.dirtPatchLayer.disableNormalViz();
-      this.dirtPatchLayer.display();
-    }
-
-    if (this.displayWagonPath) {
-      if (this.displayNormals) this.wagonPath.enableNormalViz();
-      else this.wagonPath.disableNormalViz();
-      this.wagonPath.display();
-    }
-
-    if (this.displayRocks) {
-      if (this.displayNormals) this.rockField.enableNormalViz();
-      else this.rockField.disableNormalViz();
-      this.rockField.display();
-    }
-
-    if (this.displayFlowers) {
-      this.flowerField.display();
-    }
-
-    if (this.displayBaleArea) {
-      this.pushMatrix();
-      this.translate(this.baleAreaX, this.baleAreaY, this.baleAreaZ);
-      this.rotate(-Math.PI / 2, 1, 0, 0);
-      this.scale(this.baleAreaRadius, this.baleAreaRadius, this.baleAreaHeight);
-      this.setActiveShader(this.baleAreaShader);
-      this.baleAreaShader.setUniformsValues({
-        uBaseColor: this.wagonIntersecting
-          ? this.baleAreaActiveColor
-          : this.baleAreaNormalColor,
-      });
-      this.baleArea.display();
-      this.setActiveShader(this.defaultShader);
-      this.popMatrix();
-    }
-
-    if (this.displayBarn) {
-      this.pushMatrix();
-      this.translate(this.barnX, this.barnY, this.barnZ + 9);
-      this.scale(2.5, 2.5, 2.5);
-      this.rotate(this.barnRotation, 0, 1, 0);
-      this.barn.display();
-      this.popMatrix();
-    }
+    this.barnManager.display();
 
     if (this.displayWagon) {
       this.wagon.display();
@@ -766,56 +221,20 @@ export class MyScene extends CGFscene {
       }
     }
 
-    if (this.displaySun) {
-      if (this.displayNormals) this.sun.enableNormalViz();
-      else this.sun.disableNormalViz();
-      this.sun.display();
-    }
-
-    if (this.displayGrass) {
-      if (this.displayNormals) this.grassField.enableNormalViz();
-      else this.grassField.disableNormalViz();
-      this.grassField.display(this.time);
-    }
-
-    if (this.displayHayBales) {
-      for (const bale of this.hayBales) {
-        bale.display();
-      }
-    }
-
     this.popMatrix();
   }
 
-  testBoxVsSphere(boxX, boxZ, halfWidth, halfLength, orientation, sphereX, sphereZ, sphereRadius) {
-    const dx = boxX - sphereX;
-    const dz = boxZ - sphereZ;
-    const dist = Math.sqrt(dx * dx + dz * dz) || 1;
-    const combinedRadius = Math.max(halfWidth, halfLength) + sphereRadius;
-
-    if (dist < combinedRadius) {
-      return {
-        nx: dx / dist,
-        nz: dz / dist,
-        overlap: combinedRadius - dist
-      };
-    }
-    return null;
+  get time() {
+    return this.gameStateManager ? this.gameStateManager.time : 0;
   }
 
-  testBoxVsBox(box1X, box1Z, halfWidth1, halfLength1, orientation1, box2X, box2Z, halfWidth2, halfLength2, orientation2) {
-    const dx = box1X - box2X;
-    const dz = box1Z - box2Z;
-    const dist = Math.sqrt(dx * dx + dz * dz) || 1;
-    const combinedRadius = Math.max(halfWidth1, halfLength1) + Math.max(halfWidth2, halfLength2);
+  get skyDome() { return this.environmentManager.skyDome; }
+  get terrain() { return this.environmentManager.terrain; }
+  get wagonPath() { return this.environmentManager.wagonPath; }
+  get rockField() { return this.environmentManager.rockField; }
 
-    if (dist < combinedRadius) {
-      return {
-        nx: dx / dist,
-        nz: dz / dist,
-        overlap: combinedRadius - dist
-      };
-    }
-    return null;
-  }
+  get barnX() { return this.barnManager.x; }
+  get barnY() { return this.barnManager.y; }
+  get barnZ() { return this.barnManager.z; }
+  get barnRotation() { return this.barnManager.rotation; }
 }
