@@ -373,6 +373,43 @@ export class MyScene extends CGFscene {
       this.lastPathWidth = this.wagonPath.width;
       this.grassField.rebuild();
     }
+
+    if (this.camera && this.skyDome) {
+      const radius = (this.skyDome.radius - 1) * this.scaleFactor;
+      const pos = this.camera.position;
+      const dist = Math.sqrt(pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2]);
+      
+      let newX = pos[0];
+      let newY = pos[1];
+      let newZ = pos[2];
+      let changed = false;
+
+      if (dist > radius) {
+        const factor = radius / dist;
+        newX *= factor;
+        newY *= factor;
+        newZ *= factor;
+        changed = true;
+      }
+
+      if (this.terrain) {
+        const localX = newX / this.scaleFactor;
+        const localZ = newZ / this.scaleFactor;
+        const terrainY = this.terrain.getHeightAt(localX, localZ) * this.scaleFactor;
+        
+        if (newY < terrainY + 1.0) {
+          newY = terrainY + 1.0;
+          changed = true;
+        }
+      }
+
+      if (changed) {
+        this.camera.setPosition(vec3.fromValues(newX, newY, newZ));
+        if (this.cameraManager.mode === 'Manual') {
+            this.cameraManager.followPosition = [newX, newY, newZ];
+        }
+      }
+    }
   }
 
   checkGameStatus() {
