@@ -38,7 +38,7 @@ Devido ao uso de módulos e texturas, o projeto precisa de ser corrido através 
 
 ### Céu, Nuvens e Sol
 
-- Esfera invertida com textura panorâmica de paisagem
+- Semiesfera invertida com textura panorâmica de paisagem
 - Sol com luz direcional
 - Camada de nuvens animada como segunda textura (Bónus: nuvens procedurais e camada animada)
 

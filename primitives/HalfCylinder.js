@@ -1,6 +1,5 @@
 import { CGFobject } from "../../lib/CGF.js";
 
-// Meio cilindro unitário: largura em X, altura em Y e comprimento em Z.
 export class HalfCylinder extends CGFobject {
     constructor(scene, slices = 24, stacks = 1, caps = true) {
         super(scene);
