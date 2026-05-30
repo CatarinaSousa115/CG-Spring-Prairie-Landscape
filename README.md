@@ -16,9 +16,13 @@ O objetivo consiste em recolher e entregar no celeiro todos os fardos de feno qu
 
 ## Instruções
 
-- Instructions to run the project (dependencies, how to launch)
+Devido ao uso de módulos e texturas, o projeto precisa de ser corrido através de um servidor HTTP local a partir da **raiz do repositório**:
 
-# Controlos
+1. **Python:** Executar `python -m http.server` e abrir [http://localhost:8000/project/](http://localhost:8000/project/)
+2. **Node.js:** Executar `npx serve` e abrir o link indicado (geralmente [http://localhost:3000/project/](http://localhost:3000/project/)).
+3. **VS Code:** Usar a extensão **Live Server** no ficheiro `project/index.html`.
+
+## Controlos
 
 | **Tecla** | **Ação**                                     |
 | --------- | -------------------------------------------- |
@@ -34,7 +38,7 @@ O objetivo consiste em recolher e entregar no celeiro todos os fardos de feno qu
 
 ### Céu, Nuvens e Sol
 
-- Meia-esfera invertida com textura panorâmica de paisagem
+- Esfera invertida com textura panorâmica de paisagem
 - Sol com luz direcional
 - Camada de nuvens animada como segunda textura (Bónus: nuvens procedurais e camada animada)
 
