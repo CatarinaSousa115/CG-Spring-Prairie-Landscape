@@ -12,7 +12,7 @@
 
 A nossa cena baseia-se num cenário de pradaria, onde é possível ver um tapete de relva onde estão presentes algumas flores de diferentes formas e cores que são realçadas pelo sol, presente no céu azul populado por nuvens, que ilumina toda a área. O terreno, além de irregular, tem por si espalhadas várias rochas de vários tipos e tamanhos. Existe ainda um caminho de terra batida, onde se encontra uma carroça puxada por dois cavalos e, já perto do horizonte, um celeiro marcado pela sigla _CAT_.
 
-O objetivo consiste em recolher e entregar no celeiro todos os fardos de feno que estão espalhados pelo cenário, antes que a saúde da carroça chegue ao fim. O jogador tem de ser rápido, visto que, com  o passar do tempo, a carroça perde HP. No entanto, é necessário também cuidado na manobra da carroça, pois embater contra as rochas, o celeiro ou a linha de horizonte, origina uma penalização extra na saúde da carroça por cada choque. 
+O objetivo consiste em recolher e entregar no celeiro todos os fardos de feno que estão espalhados pelo cenário, antes que a saúde da carroça chegue ao fim. O jogador tem de ser rápido, visto que, com o passar do tempo, a carroça perde HP. No entanto, é necessário também cuidado na manobra da carroça, pois embater contra as rochas, o celeiro ou a linha de horizonte, origina uma penalização extra na saúde da carroça por cada choque.
 
 ## Instruções
 
@@ -121,7 +121,25 @@ Sistema de alteração de câmaras (C):
 
 ## Screenshots
 
-- Screenshot thumbnails or links to the 5 required screenshots
+**Overall scene overview**
+
+![Overall scene overview](screenshots/project-t04g03-1.png)
+
+**Flower rocks and floor**
+
+![Flower rocks and floor](screenshots/project-t04g03-2.png)
+
+**Wagon**
+
+![Wagon](screenshots/project-t04g03-3.png)
+
+**Shader animation**
+
+![Shader animation](screenshots/project-t04g03-4.gif)
+
+**Barn**
+
+![Barn](screenshots/project-t04g03-5.png)
 
 ## Uso de IA
 
