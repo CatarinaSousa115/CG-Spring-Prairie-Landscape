@@ -123,29 +123,31 @@ Sistema de alteração de câmaras (C):
 
 **Vista geral da cena**
 
-![Vista geral da cena](screenshots/project-t04g03-1.png)
-
-![Vista geral da cena](https://drive.google.com/file/d/1bnUZkRgoxkrq7FfN1acOXb9LHhEgm6GR/view?usp=drive_link)
+![Vista geral da cena](screenshots/final/project-t04g03-1.png)
 
 **Flores, rochas e terreno**
 
-![Flores, rochas e terreno](screenshots/project-t04g03-2.png)
+![Flores, rochas e terreno](screenshots/final/project-t04g03-2.png)
 
 **Carroça**
 
-![Carroça](screenshots/project-t04g03-3.png)
+![Carroça](screenshots/final/project-t04g03-3.png)
 
 **Animação dos shaders**
 
-![Animação dos shaders](screenshots/project-t04g03-4.gif)
+![Animação dos shaders](screenshots/final/project-t04g03-4.gif)
 
 **Celeiro**
 
-![Celeiro](screenshots/project-t04g03-5.png)
+![Celeiro](screenshots/final/project-t04g03-5.png)
 
 ### Screenshots por Tag
 
-[Ver screenshots das diferentes tags do projeto](https://drive.google.com/drive/folders/1vco-go65_-jdZhRD9w1wL8fluP6R6Iis?usp=drive_link)
+[Ver screenshots das diferentes tags do projeto](screenshots/)
+
+### Video
+
+<video controls src="screenshots/project-t04g03.mp4" title="video"></video>
 
 ## Uso de IA
 
